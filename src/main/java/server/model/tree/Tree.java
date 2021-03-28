@@ -1,11 +1,12 @@
 package server.model.tree;
 
+import jdk.jshell.Snippet;
 import server.model.Location;
 import server.model.users.TripRequest;
 import server.tools.DistanceCounter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 public class Tree {
 
@@ -24,13 +25,14 @@ public class Tree {
      */
     public boolean isEmpty = true;
 
-    public Tree getShallowCopy(){
+    public Tree getShallowCopy() {
         Tree newTree = new Tree();
 
         newTree.originalRoot = originalRoot.getShallowCopy();
 
-        Node node = newTree.originalRoot;;
-        while(!node.equals(currentRoot)){
+        Node node = newTree.originalRoot;
+        ;
+        while (!node.equals(currentRoot)) {
             node = node.children.get(0);
         }
 
@@ -46,13 +48,15 @@ public class Tree {
      * @return возможна ли она в этом дереве
      */
     public boolean handleRequest(TripRequest tripRequest) {
-        Node newOrigin = new Node(NodeType.ORIGIN, null, tripRequest.origin);
-        Node newDestination = new Node(NodeType.DESTINATION, null, tripRequest.destination);
+        Node newOrigin = new Node(NodeType.ORIGIN, null, tripRequest.origin, tripRequest.dateOfRequest);
+        Node newDestination = new Node(NodeType.DESTINATION, null, tripRequest.destination, null);
         newOrigin.timeLimit = tripRequest.maxWaitingMeasure;
+        newOrigin.pairedLoc = tripRequest.destination;
+        newDestination.pairedLoc = tripRequest.origin;
         newDestination.timeLimit = tripRequest.maxWaitingMeasure;
         newDestination.tripCoefficient = tripRequest.distanceCoefficient;
         newDestination.distanceFromOriginToNode = DistanceCounter.measureDistance(newOrigin, newDestination);
-        newDestination.distanceFromOriginToNodeCurrent = newDestination.distanceFromOriginToNode;
+        newDestination.arrivingTime = newOrigin.arrivingTime.plusMinutes((long) (newDestination.distanceFromOriginToNode / TripRequest.MINUTES_TO_KM));
 
         boolean res;
         if (originalRoot == null) {
@@ -65,10 +69,18 @@ public class Tree {
             }}, 0);
         }
 
-        updateSlackTime(currentRoot);
-        return res;
+        //updateSlackTime(currentRoot);
+        //System.out.printf("%s %s\n", currentRoot.slackTime, res);
+        updateSlackTimeFromRoot(currentRoot);
+        return res && currentRoot.slackTime > 0;
     }
 
+    /**
+     * Инициализация корня дерева.
+     *
+     * @param origin      точка отправления водителя машины.
+     * @param destination точка прибытия водителя машины.
+     */
     private void initRoot(Node origin, Node destination) {
         isEmpty = false;
         originalRoot = origin;
@@ -77,8 +89,9 @@ public class Tree {
         destination.parent = origin;
         destination.distanceFromRootToNode = DistanceCounter.measureDistance(origin, destination);
         destination.status = TripStatus.ACTIVE;
+        origin.status = TripStatus.ACTIVE;
         updateSlackTime(destination);
-        updateSlackTime(origin);
+        origin.slackTime = destination.slackTime;
     }
 
     /**
@@ -88,19 +101,20 @@ public class Tree {
      * @return возможно ли вставить узел в дерево
      */
     private static boolean insertNode(Node root, ArrayList<Node> nodes, double depth) {
-        if(root.children.isEmpty()){
+        if (root.children.isEmpty()) {
             return false;
         }
         Node node = nodes.get(0);
         var dist = DistanceCounter.measureDistance(root, node);
-        if (isFeasible(root, node, depth + dist)){
+        if (isFeasible(root, node, depth + dist)) {
             boolean firstFlag = false;
 
-            Node newNode = new Node(node.type, new ArrayList<>(), node.location, root);
+            Node newNode = new Node(node.type, new ArrayList<>(),
+                    node.location, root, root.arrivingTime.plusMinutes((long) (root.distanceFromOriginToNode / TripRequest.MINUTES_TO_KM)));
             newNode.slackTime = node.slackTime;
             newNode.distanceFromRootToNode = root.distanceFromRootToNode + dist;
             newNode.distanceFromOriginToNode = node.distanceFromOriginToNode;
-            newNode.distanceFromOriginToNodeCurrent = node.distanceFromOriginToNodeCurrent;
+            newNode.pairedLoc = node.pairedLoc;
             newNode.tripCoefficient = node.tripCoefficient;
             newNode.timeLimit = node.timeLimit;
 
@@ -111,23 +125,17 @@ public class Tree {
                                 - DistanceCounter.measureDistance(root, child));
             }
 
-            if ((firstFlag || root.children.isEmpty()) && nodes.size() > 1) {
+            if (firstFlag && nodes.size() > 1) {
                 updateSlackTime(newNode);
                 firstFlag = insertNode(newNode, new ArrayList<>() {{
                     add(nodes.get(1));
-                }}, -nodes.get(1).distanceFromOriginToNode);
+                }}, depth + dist);
             }
 
             boolean secondFlag;
             ArrayList<Integer> positionsForDeletion = new ArrayList<>();
             for (int i = 0; i < root.children.size(); ++i) {
-                if(nodes.size() == 1){
-                    var dest = nodes.get(0);
-                    var child = root.children.get(i);
-                    dest.distanceFromOriginToNodeCurrent = DistanceCounter.measureDistance(root, child) +
-                            DistanceCounter.measureDistance(child, dest);
-                }
-                secondFlag = insertNode(root.children.get(i), nodes, depth + dist);
+                secondFlag = insertNode(root.children.get(i), nodes, root.children.get(i).distanceFromRootToNode);
                 if (!secondFlag) {
                     positionsForDeletion.add(i);
                 }
@@ -136,15 +144,11 @@ public class Tree {
             if (firstFlag) {
                 root.children.add(newNode);
                 newNode.parent = root;
-                //updateSlackTime(newNode);
             }
-//            else if (positionsForDeletion.size() == root.children.size()) {
-//                secondFlag = false;
-//            }
 
-            if(firstFlag || positionsForDeletion.size() != root.children.size()){
+            if (firstFlag || positionsForDeletion.size() != root.children.size()) {
                 for (int i = positionsForDeletion.size() - 1; i >= 0; --i) {
-                    root.children.remove((int)positionsForDeletion.get(i));
+                    root.children.remove((int) positionsForDeletion.get(i));
                 }
                 return true;
             }
@@ -154,7 +158,8 @@ public class Tree {
     }
 
     /**
-     * Фактически мы проверяем, чтобы у добавляемых вершин оставался ненулевой запас лишнего времени.
+     * Копируем поддерево в новый узел. При этом происходит проверка на то, возможно ли проехать по текущей ветви,
+     * не выбиваясь при этом из графика.
      *
      * @param copyHere вершина, в котороую копируем
      * @param fromHere вершина, из которой копируем
@@ -162,10 +167,6 @@ public class Tree {
      * @return успешно ли прошло копирование
      */
     public static boolean copyNode(Node copyHere, Node fromHere, double distance) {
-//        double newShift = fromHere.type == NodeType.ORIGIN ?
-//                fromHere.timeLimit - distance:
-//                fromHere.slackTime - distance;
-
         double newShift = fromHere.slackTime - distance;
         if (newShift <= 0) {
             return false;
@@ -173,16 +174,15 @@ public class Tree {
 
         boolean flag = false;
 
-        Node copy = new Node(fromHere.type, new ArrayList<>(), fromHere.location);
-        copy.slackTime = newShift;
+        Node copy = new Node(fromHere.type, new ArrayList<>(),
+                fromHere.location, fromHere.arrivingTime.plusMinutes((long) (distance / TripRequest.MINUTES_TO_KM)));
+        copy.slackTime = distance;
         copy.status = fromHere.status;
         copy.distanceFromRootToNode = fromHere.distanceFromRootToNode + distance;
         copy.distanceFromOriginToNode = fromHere.distanceFromOriginToNode;
-        if(copy.status == TripStatus.ACTIVE){
-            //
-            copy.distanceFromOriginToNodeCurrent = fromHere.distanceFromOriginToNodeCurrent + distance;
-        }
         copy.tripCoefficient = fromHere.tripCoefficient;
+        copy.pairedLoc = fromHere.pairedLoc;
+        ;
         copy.timeLimit = fromHere.timeLimit;
         copy.parent = copyHere;
 
@@ -198,10 +198,30 @@ public class Tree {
         return false;
     }
 
+    /**
+     * Обновление запасного времени для текщуего корня
+     *
+     * @param node узел, начиная с которого нужно обновить запасное время
+     */
+    public static void updateSlackTimeFromRoot(Node node) {
+        double max = 0;
+        for (Node child : node.children) {
+            updateSlackTime(child);
+            max = max == 0 ? child.slackTime : Math.max(max, child.slackTime);
+        }
+        node.slackTime = max;
+    }
+
+    /**
+     * Обновление запасного времени
+     *
+     * @param node узел, начиная с которого нужно обновить запасное время
+     */
     public static void updateSlackTime(Node node) {
         double res;
         if (node.status == TripStatus.WAITING) {
             res = node.timeLimit - node.distanceFromRootToNode;
+            res += node.type == NodeType.DESTINATION ? node.distanceFromOriginToNode * (1 + node.tripCoefficient) : 0;
         } else {
             res = (1 + node.tripCoefficient) * node.distanceFromOriginToNode -
                     node.distanceFromRootToNode;
@@ -219,13 +239,21 @@ public class Tree {
         }
     }
 
+    /**
+     * Возможно ли добавить вершину в текущее поддерево.
+     *
+     * @param root    корень поддерева
+     * @param newNode новая вершина
+     * @param dist    путь от корня всего дерева, до новой вершины
+     * @return не рушит ли планы корня поддерева и его детей новая вершина
+     */
     public static boolean isFeasible(Node root, Node newNode, double dist) {
-        if(newNode.type == NodeType.ORIGIN && (dist < newNode.timeLimit)){
+        if (newNode.type == NodeType.ORIGIN && (dist < newNode.timeLimit)) {
             return true;
         }
-        for(var child : root.children){
-            if(dist - root.distanceFromRootToNode + DistanceCounter.measureDistance(newNode, child)
-                    - DistanceCounter.measureDistance(root, child) < child.slackTime){
+        for (var child : root.children) {
+            if (dist - root.distanceFromRootToNode + DistanceCounter.measureDistance(newNode, child)
+                    - DistanceCounter.measureDistance(root, child) < child.slackTime) {
                 return true;
             }
 
@@ -234,40 +262,107 @@ public class Tree {
         return false;
     }
 
+    /**
+     * Символьное представление дерева
+     *
+     * @return символьное представление
+     */
     public String getStringRepresentation() {
         StringBuilder builder = new StringBuilder();
 
-        builder.append("<Tree>\n\t").append(currentRoot.getStringRepresentation("\t"));
+        builder.append("<Tree>\n");
+
+        Node n = originalRoot;
+        while (currentRoot.location != n.location) {
+            builder.append(n.getSimpleStringRepresentation("\t"));
+            n = n.children.get(0);
+        }
+
+        builder.append(currentRoot.getStringRepresentation("\t"));
 
         return builder.toString();
     }
 
-    public void convertIntoSolution(){
+    /**
+     * Преобразование дерева решений в одно конкретное решение (в список точек прибытия и отправления).
+     */
+    public void convertIntoSolution() {
         Node currNode = currentRoot;
 
-        while (!currNode.children.isEmpty()){
+        while (!currNode.children.isEmpty()) {
+            Node child = null;
             double max = -1;
 
-            for(int i =0; i < currNode.children.size(); ++i){
-                if(currNode.children.get(i).slackTime > max){
-                    max = currNode.children.get(i).slackTime;
+            for (int i = 0; i < currNode.children.size(); ++i) {
+                if (currNode.children.get(i).slackTime > max) {
+                    child = currNode.children.get(i);
+                    max = child.slackTime;
                 }
             }
 
-            final double bound = max;
-            currNode.children = currNode.children.stream().filter(it -> it.slackTime >= bound).collect(Collectors.toCollection(ArrayList::new));
+            if (child == null) {
+                throw new IllegalStateException("There are no appropriate node");
+            }
 
-            currNode = currNode.children.get(0);
+            currNode.children.clear();
+            currNode.children.add(child);
+            currNode = child;
         }
     }
 
-    public void updateCurrentRoot(Location location){
-        Node node = currentRoot;
+    /**
+     * Обновление дерева относительно временной точки (текущего времени). При этом необходимо сдвинуть текущий корень
+     * до той точки, которую мы еще не успели проехать.
+     *
+     * @param time текущее время
+     */
+    public void updateCurrentRootByTime(LocalDateTime time) {
+        Node node = currentRoot.children.isEmpty() ? currentRoot : currentRoot.children.get(0);
 
-        while(!node.location.equals(location) && !node.children.isEmpty()){
+        ArrayList<Location> locations = new ArrayList<>();
+
+        while (node.arrivingTime.compareTo(time) < 0 && !node.children.isEmpty()) {
+            if (node.type == NodeType.ORIGIN) {
+                locations.add(node.pairedLoc);
+                node.status = TripStatus.ACTIVE;
+            } else {
+                node.status = TripStatus.FINISHED;
+                locations.add(node.location);
+            }
             node = node.children.get(0);
         }
+        if (node.type == NodeType.ORIGIN) {
+            locations.add(node.pairedLoc);
+        }
+
+        double skippedKms = (currentRoot.arrivingTime.getDayOfMonth() - node.arrivingTime.getDayOfMonth()) * 24 * 60
+                + (currentRoot.arrivingTime.getHour() - node.arrivingTime.getHour()) * 60
+                + (currentRoot.arrivingTime.getMinute() - node.arrivingTime.getMinute()) * TripRequest.MINUTES_TO_KM;
 
         currentRoot = node;
+
+        // Обновляем точки, до которых еще не доехали
+        while (!node.children.isEmpty()) {
+            if (locations.contains(node.location)) {
+                node.status = TripStatus.ACTIVE;
+                locations.remove(node.location);
+            }
+            node = node.children.get(0);
+            node.timeLimit -= skippedKms;
+        }
+        if (locations.contains(node.location)) {
+            node.status = TripStatus.ACTIVE;
+            locations.remove(node.location);
+        }
+
+        // Обновляем точки отправления поездок, которые уже завершились
+        node = currentRoot.parent;
+        while (node != null && !locations.isEmpty()) {
+            if (locations.contains(node.pairedLoc) && node.status != TripStatus.FINISHED) {
+                node.status = TripStatus.FINISHED;
+                locations.remove(node.pairedLoc);
+            }
+            node = node.parent;
+        }
     }
 }

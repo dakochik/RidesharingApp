@@ -5,42 +5,55 @@ import server.model.users.TripRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.ForkJoinPool;
 
 public class RideSharingComputer {
     public ArrayList<Car> cars;
 
     public ArrayList<TripRequest> requests;
 
-    public RideSharingComputer(){
+    public int confirmedReq = 0;
+
+    public RideSharingComputer() {
         cars = new ArrayList<>();
         requests = new ArrayList<>();
     }
 
-    public void addTask(TripRequest request){
+    public void addTask(TripRequest request) {
         requests.add(request);
     }
 
-    public void addAllTask(Collection<TripRequest> requests){
+    public void addAllTask(Collection<TripRequest> requests) {
         this.requests.addAll(requests);
     }
 
-    public void addCar(Car car){
+    public void addCar(Car car) {
         cars.add(car);
     }
 
-    public void addAllCars(Collection<Car> cars){
+    public void addAllCars(Collection<Car> cars) {
         this.cars.addAll(cars);
     }
 
-    public void compute(){
-        for(int i =0; i < requests.size(); ++i){
+    /**
+     * Запускает рекурсивный подбор машины для списка запросов.
+     */
+    public final void compute() {
+        for (int i = 0; i < requests.size(); ++i) {
             RideSharingComputerRecursiveTask task = new RideSharingComputerRecursiveTask(cars, requests.get(i));
-            handleUpdating(task.compute());
+            var res = task.compute();
+            res.ifPresent(this::handleUpdating);
         }
     }
 
-    public void handleUpdating(Car car){
-        car.confirmRequest();
+    /**
+     * Обработчик подтверждения запроса.
+     *
+     * @param car машина, принявшая новый запрос на поездку.
+     */
+    public void handleUpdating(Car car) {
+        if (car != null) {
+            car.confirmRequest();
+            ++confirmedReq;
+        }
     }
 }

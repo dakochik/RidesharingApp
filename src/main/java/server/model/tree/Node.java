@@ -6,6 +6,7 @@ import server.tools.DistanceCounter;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -58,12 +59,6 @@ public class Node {
     public double distanceFromOriginToNode;
 
     /**
-     * Время движения от точки отправления к текущему узлу, представляемое в виде расстояния, которое можно преодолеть за это время.
-     * Расстояние считается для маршрута по всем злам о тточки отправления, до точки прибытия.
-     */
-    public double distanceFromOriginToNodeCurrent;
-
-    /**
      * Запас времени (т.е. лишнее время), представляемый в виде расстояния, которое можно преодолеть за это время
      */
     public double slackTime = 0;
@@ -73,11 +68,16 @@ public class Node {
      */
     public double distanceFromRootToNode;
 
-    public Node(NodeType type, ArrayList<Node> children, Location location){
-        this(type, children, location, null);
+    /**
+     * Время прибытия к этому узлу.
+     */
+    public LocalDateTime arrivingTime;
+
+    public Node(NodeType type, ArrayList<Node> children, Location location, LocalDateTime time){
+        this(type, children, location, null, time);
     }
 
-    public Node(NodeType type, ArrayList<Node> children, Location location, Node parent){
+    public Node(NodeType type, ArrayList<Node> children, Location location, Node parent, LocalDateTime time){
         this.type =type;
         if(children != null) {
             this.children = children;
@@ -89,6 +89,7 @@ public class Node {
         this.location = location;
         this.parent = parent;
         status = TripStatus.WAITING;
+        arrivingTime = time;
     }
 
     public String getStringRepresentation(String offset){
@@ -105,7 +106,17 @@ public class Node {
         }
 
         builder.append(location.latitude).append(" ").append(location.longitude);
+        if(status == TripStatus.WAITING){
+            builder.append(" WAITING");
+        }
+        else if(status == TripStatus.ACTIVE){
+            builder.append(" ACTIVE");
+        }
+        else{
+            builder.append(" FINISHED");
+        }
         builder.append(" ; ").append(slackTime);
+        builder.append(" ; ").append(arrivingTime.getHour()).append(":").append(arrivingTime.getMinute());
 
         for(var node : children){
             builder.append("\n" + offset).append(node.getStringRepresentation(offset + "\t"));
@@ -114,14 +125,44 @@ public class Node {
         return  builder.toString();
     }
 
+    public String getSimpleStringRepresentation(String offset){
+        StringBuilder builder = new StringBuilder();
+
+        if(type == NodeType.ORIGIN){
+            builder.append(offset).append("(O) - ");
+        }
+        else if(type == NodeType.DESTINATION){
+            builder.append(offset).append("(D) - ");
+        }
+        else{
+            builder.append(offset).append("(R) - ");
+        }
+
+        builder.append(location.latitude).append(" ").append(location.longitude);
+        if(status == TripStatus.WAITING){
+            builder.append(" WAITING");
+        }
+        else if(status == TripStatus.ACTIVE){
+            builder.append(" ACTIVE");
+        }
+        else{
+            builder.append(" FINISHED");
+        }
+        builder.append(" ; ").append(slackTime);
+        builder.append(" ; ").append(arrivingTime.getHour()).append(":").append(arrivingTime.getMinute());
+        builder.append("\n");
+
+        return  builder.toString();
+    }
+
     public Node getShallowCopy(){
-        Node node = new Node(type, new ArrayList<>(), location);
+        Node node = new Node(type, new ArrayList<>(), location, arrivingTime);
         node.slackTime = slackTime;
         node.distanceFromRootToNode = distanceFromRootToNode;
         node.tripCoefficient = tripCoefficient;
         node.status = status;
         node.distanceFromOriginToNode = distanceFromOriginToNode;
-        node.distanceFromOriginToNodeCurrent = distanceFromOriginToNodeCurrent;
+        node.pairedLoc = pairedLoc;
         node.timeLimit = timeLimit;
 
         for(var child : children){
