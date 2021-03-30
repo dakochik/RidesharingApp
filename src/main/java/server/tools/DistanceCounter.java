@@ -1,7 +1,10 @@
 package server.tools;
 
+import org.apache.lucene.util.SloppyMath;
 import server.model.Location;
 import server.model.tree.Node;
+
+import static java.lang.Math.PI;
 
 public class DistanceCounter {
     /**
@@ -47,5 +50,24 @@ public class DistanceCounter {
 
             return dist;
         }
+    }
+
+    /**
+     * Сдвиг по широте
+     * @param width длинна сдвига в км
+     * @return
+     */
+    public static double getLatitudeShift(double width){
+        return width / 111.111;
+    }
+
+    /**
+     * Сдвиг по долготе
+     * @param length длинна сдвига в км
+     * @param lat долгота точки
+     * @return
+     */
+    public static double getLongitudeShift(double length, double lat){
+        return (length/111.111)/Math.cos(lat);
     }
 }

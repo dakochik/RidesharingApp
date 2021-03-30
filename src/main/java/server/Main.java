@@ -45,34 +45,34 @@ public class Main {
 //        System.out.println(comp.cars.get(1).tree.getStringRepresentation());
 //        System.out.println(comp.cars.get(1).getUri());
 
-        //Пример 2 с 5000 запрсами из г.Чикаго
-        RideSharingComputer comp = new RideSharingComputer();
-        try {
-            var res = LocalDataReadWriter.getDataSec(5000);
-            for(int i =0; i < res.size()/3; ++i){
-                comp.addCar(new Car(3,res.get(i)));
-            }
-            for(int i =res.size()/3 + 1; i < res.size(); ++i){
-                comp.addTask(res.get(i));
-            }
-
-            System.out.println(comp.requests.size());
-            comp.compute();
-
-            System.out.println(comp.confirmedReq);
-
-            // Вывод строкового представления деревьев решений
-            for (var a: comp.cars) {
-                System.out.println(a.tree.getStringRepresentation());
-            }
-
-            // Пример движения одной машины и проверка результата
-            comp.cars.get(comp.cars.size() - 4).updateLocation(comp.cars.get(comp.cars.size() - 4).tree.originalRoot.arrivingTime.plusMinutes(1));
-            System.out.println(comp.cars.get(comp.cars.size() - 4).tree.getStringRepresentation());
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+//        //Пример 2 с 5000 запрсами из г.Чикаго
+//        RideSharingComputer comp = new RideSharingComputer();
+//        try {
+//            var res = LocalDataReadWriter.getDataSec(5000);
+//            for(int i =0; i < res.size()/3; ++i){
+//                comp.addCar(new Car(3,res.get(i)));
+//            }
+//            for(int i =res.size()/3 + 1; i < res.size(); ++i){
+//                comp.addTask(res.get(i));
+//            }
+//
+//            System.out.println(comp.requests.size());
+//            comp.compute();
+//
+//            System.out.println(comp.confirmedReq);
+//
+//            // Вывод строкового представления деревьев решений
+//            for (var a: comp.cars) {
+//                System.out.println(a.tree.getStringRepresentation());
+//            }
+//
+//            // Пример движения одной машины и проверка результата
+//            comp.cars.get(comp.cars.size() - 4).updateLocation(comp.cars.get(comp.cars.size() - 4).tree.originalRoot.arrivingTime.plusMinutes(1));
+//            System.out.println(comp.cars.get(comp.cars.size() - 4).tree.getStringRepresentation());
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
 
         ////Пример группировки по времени запроса
 //        try {
