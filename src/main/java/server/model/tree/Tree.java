@@ -1,6 +1,5 @@
 package server.model.tree;
 
-import jdk.jshell.Snippet;
 import server.model.Location;
 import server.model.users.TripRequest;
 import server.tools.DistanceCounter;

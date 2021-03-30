@@ -1,6 +1,5 @@
 package server.model.users;
 
-import server.model.Location;
 import server.model.tree.Node;
 import server.model.tree.Tree;
 

@@ -2,7 +2,6 @@ package server.model.users;
 
 import server.model.Location;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 

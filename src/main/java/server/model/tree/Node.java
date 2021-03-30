@@ -1,11 +1,7 @@
 package server.model.tree;
 
 import server.model.Location;
-import server.model.users.TripRequest;
-import server.tools.DistanceCounter;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;

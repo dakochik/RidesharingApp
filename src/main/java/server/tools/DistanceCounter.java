@@ -1,10 +1,7 @@
 package server.tools;
 
-import org.apache.lucene.util.SloppyMath;
 import server.model.Location;
 import server.model.tree.Node;
-
-import static java.lang.Math.PI;
 
 public class DistanceCounter {
     /**
