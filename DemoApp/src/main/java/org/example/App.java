@@ -97,7 +97,7 @@ public class App extends Application {
                     map = new Map("map");
 
                     // from here we just use the Leaflet API to show some stuff on the map
-                    map.setView(new LatLng(51.505, -0.09), 1);
+                    map.setView(new LatLng(51.505, -0.09), 18);
                     map.addLayer(new TileLayer("http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png",
                             new TileLayerOptions()
                                     .setAttribution(
