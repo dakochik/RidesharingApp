@@ -82,6 +82,6 @@ public class LocalDataReadWriter {
             System.out.println(res.size());
         }
 
-        return res;
+        return res.stream().distinct().collect(Collectors.toCollection(ArrayList::new));
     }
 }

@@ -1,30 +1,168 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Leaflet Quick Start Guide Example</title>
-    <meta charset="utf-8" />
+    <title>Guide | CARTO</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <!-- Include Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
+    <!-- Include CARTO.js -->
+    <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.2.0/carto.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        html {
+            box-sizing: border-box;
+            height: 100%;
+        }
 
-    <link rel="stylesheet" href="leaflet-0.7.2/leaflet.css" />
-    <style type="text/css">
-            html, body {
-                height: 100%;
-                margin: 0;
-            }
-            #map {
-                min-height: 100%;
-            }
-        </style>
+        body {
+            background: #f2f6f9;
+            height: 100%;
+            font-family: "Open sans", Helvetica, Arial, sans-serif;
+        }
+
+        #container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        #map {
+            flex: 1;
+            margin: 10px;
+        }
+
+        #widgets {
+            width: 300px;
+            margin: 10px 10px 10px 0;
+        }
+
+        .widget {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .widget h1 {
+            font-size: 1.2em;
+        }
+
+        .widget h2 {
+            font-size: 1em;
+            display: inline;
+        }
+
+        .widget-formula .result {
+            font-size: 2em;
+        }
+    </style>
 </head>
 <body>
-<div id="map"></div>
-
-<script type="text/javascript" src="bck2brwsr.js"></script>
+<div id="container">
+    <div id="map"></div>
+    <div id="widgets">
+        <div id="tripsNumb" class="widget">
+            <h1>Maximum number of trips</h1>
+            <input type="number" width="3" id="trips_numb" name="trips_numb" min="1" onchange="itenChanget()">
+        </div>
+        <div id="tripsDate" class="widget">
+            <h1>Trip request time</h1>
+            <h2>
+                <h2>From:</h2>
+                <input type="time" width="3" id="trips_time_begin" name="trips_time_begin">
+                <h2>To:</h2>
+                <input type="time" width="3" id="trips_time_end" name="trips_time_end">
+                <button id="filter_by_time_button" onclick="filterByData()">Show</button>
+            </h2>
+        </div>
+        <div id="countriesWidget" class="widget">
+            <h1>European countries</h1>
+            <select class="js-countries">
+                <option value="">All</option>
+            </select>
+        </div>
+        <div id="avgPopulationWidget" class="widget widget-formula">
+            <h1>Average population</h1>
+            <p><span class="js-average-population result">xxx</span> inhabitants</p>
+        </div>
+    </div>
+</div>
 <script>
-            var vm = bck2brwsr('l4jdemo.js');
-            var main = vm.loadClass('org.apidesign.html.leaflet.demo.Main');
-            main.invoke('onPageLoad');
-        </script>
+    const map = L.map('map').setView([42.2, -87.1], 7);
+
+    // Adding Voyager Basemap
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', {
+        maxZoom: 18
+    }).addTo(map);
+
+    // Adding Voyager Labels
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        zIndex: 10
+    }).addTo(map);
+
+    var client = new carto.Client({
+        apiKey: '1dfba9e5fb93bade9610d6c49e070d65f5760ddb',
+        username: 'dakochik'
+    });
+
+    drawMap(100, "")
+
+    function itenChanget() {
+        drawMap(document.getElementById("trips_numb").value, "")
+    }
+
+    function filterByData(){
+        let maxNumb = document.getElementById("trips_numb").value;
+        let dataLowerBound= document.getElementById("trips_time_begin").value
+        let dataUpperBound= document.getElementById("trips_time_end").value
+        if(toDate(dataLowerBound, "h:m") > toDate(dataUpperBound, "h:m") ){
+            alert("Time window lower bound can't be bigger than upper bound!")
+        }
+        else{
+            drawMap(maxNumb, "WHERE cast(trip_start_timestamp as time) between '"+dataLowerBound+"' and '"+dataUpperBound+"'")
+        }
+    }
+
+    function drawMap(number, options) {
+        client.removeLayers(client.getLayers());
+        const europeanCountriesDataset = new carto.source.SQL(`
+        SELECT *
+        FROM chicago_5000_filtered `
+        + options +
+        ` LIMIT ` + number.toString());
+        const europeanCountriesStyle = new carto.style.CartoCSS(`
+        #layer {
+        line-width: 1;
+        line-color: #040BD4;
+        line-opacity: 0.5;
+        }
+        `);
+        const europeanCountries = new carto.layer.Layer(europeanCountriesDataset, europeanCountriesStyle);
+
+        client.addLayer(europeanCountries);
+
+        client.getLeafletLayer().addTo(map);
+    }
+
+    function toDate(dStr,format) {
+        var now = new Date();
+        if (format == "h:m") {
+            now.setHours(dStr.substr(0,dStr.indexOf(":")));
+            now.setMinutes(dStr.substr(dStr.indexOf(":")+1));
+            now.setSeconds(0);
+            return now;
+        }else
+            return "Invalid Format";
+    }
+
+</script>
 </body>
 </html>
