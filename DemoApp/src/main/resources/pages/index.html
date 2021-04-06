@@ -62,6 +62,7 @@
         .widget-formula .result {
             font-size: 2em;
         }
+
     </style>
 </head>
 <body>
@@ -70,7 +71,8 @@
     <div id="widgets">
         <div id="tripsNumb" class="widget">
             <h1>Maximum number of trips</h1>
-            <input type="number" width="3" id="trips_numb" name="trips_numb" min="1" onchange="itenChanget()">
+            <input type="number" width="3" id="trips_numb" name="trips_numb" min="1" value="100"
+                   onchange="prepareFiltering()">
         </div>
         <div id="tripsDate" class="widget">
             <h1>Trip request time</h1>
@@ -79,18 +81,23 @@
                 <input type="time" width="3" id="trips_time_begin" name="trips_time_begin">
                 <h2>To:</h2>
                 <input type="time" width="3" id="trips_time_end" name="trips_time_end">
-                <button id="filter_by_time_button" onclick="filterByData()">Show</button>
+                <button id="filter_by_time_button" onclick="prepareFiltering()">Show</button>
             </h2>
         </div>
-        <div id="countriesWidget" class="widget">
-            <h1>European countries</h1>
-            <select class="js-countries">
-                <option value="">All</option>
-            </select>
-        </div>
-        <div id="avgPopulationWidget" class="widget widget-formula">
-            <h1>Average population</h1>
-            <p><span class="js-average-population result">xxx</span> inhabitants</p>
+        <div id="chooseDataSets" class="widget">
+            <h1>Displayed data sets</h1>
+            <div style="margin-left: 5px">
+                <input type="checkbox" onchange="prepareFiltering()" id="c_b_1" checked>
+                <h2> - All requests</h2>
+            </div>
+            <div style="margin-left: 5px">
+                <input type="checkbox" onchange="prepareFiltering()" id="c_b_2">
+                <h2> - Car trips</h2>
+            </div>
+            <div style="margin-left: 5px">
+                <input type="checkbox" onchange="prepareFiltering()" id="c_b_3">
+                <h2> - User trips</h2>
+            </div>
         </div>
     </div>
 </div>
@@ -115,52 +122,120 @@
 
     drawMap(100, "")
 
-    function itenChanget() {
-        drawMap(document.getElementById("trips_numb").value, "")
-    }
-
-    function filterByData(){
-        let maxNumb = document.getElementById("trips_numb").value;
-        let dataLowerBound= document.getElementById("trips_time_begin").value
-        let dataUpperBound= document.getElementById("trips_time_end").value
-        if(toDate(dataLowerBound, "h:m") > toDate(dataUpperBound, "h:m") ){
-            alert("Time window lower bound can't be bigger than upper bound!")
-        }
-        else{
-            drawMap(maxNumb, "WHERE cast(trip_start_timestamp as time) between '"+dataLowerBound+"' and '"+dataUpperBound+"'")
-        }
-    }
-
     function drawMap(number, options) {
+        let flag1 = document.getElementById('c_b_1').checked;
+        let flag2 = document.getElementById('c_b_2').checked;
+        let flag3 = document.getElementById('c_b_3').checked;
         client.removeLayers(client.getLayers());
-        const europeanCountriesDataset = new carto.source.SQL(`
-        SELECT *
-        FROM chicago_5000_filtered `
-        + options +
-        ` LIMIT ` + number.toString());
-        const europeanCountriesStyle = new carto.style.CartoCSS(`
-        #layer {
-        line-width: 1;
-        line-color: #040BD4;
-        line-opacity: 0.5;
-        }
-        `);
-        const europeanCountries = new carto.layer.Layer(europeanCountriesDataset, europeanCountriesStyle);
+        var arr =[];
 
-        client.addLayer(europeanCountries);
+        if(flag1){
+            const dataset1 = new carto.source.SQL(`
+            SELECT *
+            FROM chicago_5000_filtered`
+                + options +
+                ` LIMIT ` + number.toString());
+            const style1 = new carto.style.CartoCSS(`
+            #layer {
+            line-width: 1;
+            line-color: #040BD4;
+            line-opacity: 0.5;
+            }
+            `);
+            const layer1 = new carto.layer.Layer(dataset1, style1, {
+                featureOverColumns: (['trip_start_timestamp', 'pickup_centroid_location', 'dropoff_centroid_location'])
+            });
+            arr.push(layer1);
+            setOverView(layer1);
+        }
+
+        if(flag2){
+            const dataset2 = new carto.source.SQL(`
+            SELECT *
+            FROM chicago_5000_cars`
+                + options +
+                ` LIMIT ` + number.toString());
+            const style2 = new carto.style.CartoCSS(`
+            #layer {
+            line-width: 1;
+            line-color: #A80003;
+            line-opacity: 0.5;
+            }
+            `);
+            const layer2 = new carto.layer.Layer(dataset2, style2, {
+                featureOverColumns: (['trip_start_timestamp', 'pickup_centroid_location', 'dropoff_centroid_location'])
+            });
+            arr.push(layer2);
+            setOverView(layer2);
+        }
+
+        if(flag3){
+            const dataset3 = new carto.source.SQL(`
+            SELECT *
+            FROM chicago_5000_requests`
+                + options +
+                ` LIMIT ` + number.toString());
+            const style3 = new carto.style.CartoCSS(`
+            #layer {
+            line-width: 1;
+            line-color: #00A82A;
+            line-opacity: 0.5;
+            }
+            `);
+            const layer3 = new carto.layer.Layer(dataset3, style3, {
+                featureOverColumns: (['trip_start_timestamp', 'pickup_centroid_location', 'dropoff_centroid_location'])
+            });
+            arr.push(layer3);
+            setOverView(layer3);
+        }
+
+        client.addLayers(arr);
 
         client.getLeafletLayer().addTo(map);
     }
 
-    function toDate(dStr,format) {
+    function prepareFiltering() {
+        let maxNumb = document.getElementById("trips_numb").value;
+        let dataLowerBound = document.getElementById("trips_time_begin").value
+        let dataUpperBound = document.getElementById("trips_time_end").value
+        if(dataLowerBound!= "" && dataUpperBound != "") {
+            if (toDate(dataLowerBound, "h:m") > toDate(dataUpperBound, "h:m")) {
+                alert("Time window lower bound can't be bigger than upper bound!")
+            } else {
+                drawMap(maxNumb, "WHERE cast(trip_start_timestamp as time) between '" + dataLowerBound + "' and '" + dataUpperBound + "'")
+            }
+        }
+        else{
+            drawMap(maxNumb, "");
+        }
+    }
+
+    function toDate(dStr, format) {
         var now = new Date();
         if (format == "h:m") {
-            now.setHours(dStr.substr(0,dStr.indexOf(":")));
-            now.setMinutes(dStr.substr(dStr.indexOf(":")+1));
+            now.setHours(dStr.substr(0, dStr.indexOf(":")));
+            now.setMinutes(dStr.substr(dStr.indexOf(":") + 1));
             now.setSeconds(0);
             return now;
-        }else
+        } else
             return "Invalid Format";
+    }
+
+    function setOverView(layer) {
+        const popup = L.popup({closeButton: false});
+        layer.on(carto.layer.events.FEATURE_OVER, featureEvent => {
+            popup.setLatLng(featureEvent.latLng);
+            if (!popup.isOpen()) {
+                let content = '<p>' + '<span style="font-weight: bold">Date: </span>'
+                    + (featureEvent.data.trip_start_timestamp == null ? "no info" : featureEvent.data.trip_start_timestamp) + '</p>';
+                content += '<p>' + '<span style="font-weight: bold">Origin: </span>'
+                    + featureEvent.data.pickup_centroid_location + '</p>';
+                content += '<p>' + '<span style="font-weight: bold">Destination: </span>'
+                    + featureEvent.data.dropoff_centroid_location + '</p>';
+                popup.setContent(content);
+                popup.openOn(map);
+            }
+        });
     }
 
 </script>
