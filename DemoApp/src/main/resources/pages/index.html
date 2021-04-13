@@ -99,6 +99,11 @@
                 <h2> - User trips</h2>
             </div>
         </div>
+        <div id="exactTrip" class="widget">
+            <h1>Show exact trip by id</h1>
+            <input type="text" id="trip_id"/>
+            <button id="show_exact_trip" onclick="prepareFiltering()">Show</button>
+        </div>
     </div>
 </div>
 <script>
@@ -126,6 +131,9 @@
         let flag1 = document.getElementById('c_b_1').checked;
         let flag2 = document.getElementById('c_b_2').checked;
         let flag3 = document.getElementById('c_b_3').checked;
+
+        let tripID = document.getElementById('trip_id').value;
+
         client.removeLayers(client.getLayers());
         var arr =[];
 
@@ -187,6 +195,31 @@
             });
             arr.push(layer3);
             setOverView(layer3);
+        }
+
+        if(tripID != null && tripID != ""){
+            const dataset4 = new carto.source.SQL(`
+            SELECT *
+            FROM chicago_5000_cars
+            WHERE trip_id = '` + tripID + `'` +
+                `UNION SELECT *
+                FROM chicago_5000_cars
+                WHERE trip_id in
+                (SELECT trip_id
+                FROM chicago_5000_requests
+                WHERE request_id = '` + tripID +`')`);
+            const style4 = new carto.style.CartoCSS(`
+            #layer {
+            line-width: 3;
+            line-color: #FF00B7;
+            line-opacity: 1;
+            }
+            `);
+            const layer4 = new carto.layer.Layer(dataset4, style4, {
+                featureOverColumns: (['trip_start_timestamp', 'pickup_centroid_location', 'dropoff_centroid_location'])
+            });
+            arr.push(layer4);
+            setOverView(layer4);
         }
 
         client.addLayers(arr);

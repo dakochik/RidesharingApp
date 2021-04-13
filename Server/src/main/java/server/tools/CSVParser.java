@@ -5,6 +5,7 @@ import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.io.WKBWriter;
+import server.TableHeaders;
 import server.service.RideSharingComputer;
 
 import java.io.*;
@@ -20,7 +21,10 @@ public class CSVParser {
      * @throws IOException если возникли проблемы с чтением/записью файлов
      */
     public static void fetchMainData() throws IOException {
-        String fields[] = {"trip_id", "trip_start_timestamp", "pickup_centroid_latitude", "pickup_centroid_longitude", "pickup_centroid_location", "dropoff_centroid_latitude", "dropoff_centroid_longitude", "dropoff_centroid_location"};
+        String fields[] = {TableHeaders.TRIP_ID.val, TableHeaders.TRIP_START_TIMESTAMP.val,
+                TableHeaders.PICKUP_CENTROID_LATITUDE.val, TableHeaders.PICKUP_CENTROID_LONGITUDE.val,
+                TableHeaders.PICKUP_CENTROID_LOCATION.val, TableHeaders.DROPOFF_CENTROID_LATITUDE.val,
+                TableHeaders.DROPOFF_CENTROID_LONGITUDE.val, TableHeaders.DROPOFF_CENTROID_LOCATION.val};
         int poss[] = new int[fields.length];
         int columnsSize;
         StringBuilder builder = new StringBuilder();
@@ -79,7 +83,10 @@ public class CSVParser {
     }
 
     public static void carsWriter(RideSharingComputer computer) throws IOException {
-        String fields[] = {"the_geom", "trip_start_timestamp", "pickup_centroid_latitude", "pickup_centroid_longitude", "pickup_centroid_location", "dropoff_centroid_latitude", "dropoff_centroid_longitude", "dropoff_centroid_location"};
+        String fields[] = {TableHeaders.TRIP_ID.val, TableHeaders.GEOM.val, TableHeaders.TRIP_START_TIMESTAMP.val,
+                TableHeaders.PICKUP_CENTROID_LATITUDE.val, TableHeaders.PICKUP_CENTROID_LONGITUDE.val,
+                TableHeaders.PICKUP_CENTROID_LOCATION.val, TableHeaders.DROPOFF_CENTROID_LATITUDE.val,
+                TableHeaders.DROPOFF_CENTROID_LONGITUDE.val, TableHeaders.DROPOFF_CENTROID_LOCATION.val};
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("Chicago_5000_cars.csv"))) {
             StringBuilder builder = new StringBuilder();
 
@@ -93,12 +100,14 @@ public class CSVParser {
             for (var car : computer.cars) {
                 builder.delete(0, builder.length());
 
+                builder.append(car.tripRequest.tripId).append(",");
+
                 ArrayList<Coordinate> lineOfCoordinates = new ArrayList<>();
                 var node = car.tree.originalRoot;
-                lineOfCoordinates.add(new Coordinate(node.location.longitude, node.location.latitude));
+                lineOfCoordinates.add(new Coordinate(node.location.y, node.location.x)); // CARTO geom format
                 while (!node.children.isEmpty()) {
                     node = node.children.get(0);
-                    lineOfCoordinates.add(new Coordinate(node.location.longitude, node.location.latitude));
+                    lineOfCoordinates.add(new Coordinate(node.location.y, node.location.x)); // CARTO geom format
                 }
 
                 int size = lineOfCoordinates.size();
@@ -117,16 +126,16 @@ public class CSVParser {
                 builder.append(",").append(car.tree.originalRoot.arrivingTime);
 
                 builder.append(",").append(String.format("%s,%s",
-                        car.tree.originalRoot.location.latitude, car.tree.originalRoot.location.longitude));
+                        car.tree.originalRoot.location.x, car.tree.originalRoot.location.y));
 
                 builder.append(",").append(String.format("POINT (%s %s)",
-                        car.tree.originalRoot.location.latitude, car.tree.originalRoot.location.longitude));
+                        car.tree.originalRoot.location.x, car.tree.originalRoot.location.y));
 
                 builder.append(",").append(String.format("%s,%s",
-                        lineOfCoordinates.get(size-1).x, lineOfCoordinates.get(size-1).y));
+                        lineOfCoordinates.get(size-1).y, lineOfCoordinates.get(size-1).x));
 
                 builder.append(",").append(String.format("POINT (%s %s)",
-                        lineOfCoordinates.get(size-1).x, lineOfCoordinates.get(size-1).y));
+                        lineOfCoordinates.get(size-1).y, lineOfCoordinates.get(size-1).x));
 
                 writer.append(builder.append("\n").toString());
             }
@@ -135,7 +144,11 @@ public class CSVParser {
     }
 
     public static void requestsWriter(RideSharingComputer computer) throws IOException {
-        String fields[] = {"the_geom", "trip_start_timestamp", "pickup_centroid_latitude", "pickup_centroid_longitude", "pickup_centroid_location", "dropoff_centroid_latitude", "dropoff_centroid_longitude", "dropoff_centroid_location"};
+        String fields[] = {TableHeaders.REQUEST_ID.val,TableHeaders.TRIP_ID.val, TableHeaders.GEOM.val,
+                TableHeaders.TRIP_START_TIMESTAMP.val, TableHeaders.PICKUP_CENTROID_LATITUDE.val,
+                TableHeaders.PICKUP_CENTROID_LONGITUDE.val, TableHeaders.PICKUP_CENTROID_LOCATION.val,
+                TableHeaders.DROPOFF_CENTROID_LATITUDE.val, TableHeaders.DROPOFF_CENTROID_LONGITUDE.val,
+                TableHeaders.DROPOFF_CENTROID_LOCATION.val};
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("Chicago_5000_requests.csv"))) {
             StringBuilder builder = new StringBuilder();
 
@@ -149,9 +162,12 @@ public class CSVParser {
             for (var request : computer.requests) {
                 builder.delete(0, builder.length());
 
+                builder.append(request.tripId).append(",");
+                builder.append(request.carId.orElse("")).append(",");
+
                 ArrayList<Coordinate> lineOfCoordinates = new ArrayList<>();
-                lineOfCoordinates.add(new Coordinate(request.origin.longitude, request.origin.latitude));
-                lineOfCoordinates.add(new Coordinate(request.destination.longitude, request.destination.latitude));
+                lineOfCoordinates.add(new Coordinate(request.origin.y, request.origin.x)); // CARTO format
+                lineOfCoordinates.add(new Coordinate(request.destination.y, request.destination.x)); // CARTO format
 
                 int size = lineOfCoordinates.size();
                 Coordinate[] coordinates = new Coordinate[size];
@@ -167,16 +183,16 @@ public class CSVParser {
                 builder.append(",").append(request.dateOfRequest);
 
                 builder.append(",").append(String.format("%s,%s",
-                        request.origin.latitude, request.origin.longitude));
+                        request.origin.x, request.origin.y));
 
                 builder.append(",").append(String.format("POINT (%s %s)",
-                        request.origin.latitude, request.origin.longitude));
+                        request.origin.x, request.origin.y));
 
                 builder.append(",").append(String.format("%s,%s",
-                        request.destination.latitude, request.destination.longitude));
+                        request.destination.x, request.destination.y));
 
                 builder.append(",").append(String.format("POINT (%s %s)",
-                        request.destination.latitude, request.destination.longitude));
+                        request.destination.x, request.destination.y));
 
                 writer.append(builder.append("\n").toString());
             }

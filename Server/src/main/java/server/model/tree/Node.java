@@ -1,6 +1,6 @@
 package server.model.tree;
 
-import server.model.Location;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,12 +30,12 @@ public class Node {
     /**
      * Географическое местоположение текущего узла
      */
-    public Location location;
+    public Coordinate location;
 
     /**
      * Пара для текущей локации. (т. отправления + прибытия)
      */
-    public Location pairedLoc;
+    public Coordinate pairedLoc;
 
     /**
      * Максимальное время ожидания,
@@ -69,11 +69,11 @@ public class Node {
      */
     public LocalDateTime arrivingTime;
 
-    public Node(NodeType type, ArrayList<Node> children, Location location, LocalDateTime time){
+    public Node(NodeType type, ArrayList<Node> children, Coordinate location, LocalDateTime time){
         this(type, children, location, null, time);
     }
 
-    public Node(NodeType type, ArrayList<Node> children, Location location, Node parent, LocalDateTime time){
+    public Node(NodeType type, ArrayList<Node> children, Coordinate location, Node parent, LocalDateTime time){
         this.type =type;
         if(children != null) {
             this.children = children;
@@ -101,7 +101,7 @@ public class Node {
             builder.append(offset).append("(R) - ");
         }
 
-        builder.append(location.latitude).append(" ").append(location.longitude);
+        builder.append(location.x).append(" ").append(location.y);
         if(status == TripStatus.WAITING){
             builder.append(" WAITING");
         }
@@ -134,7 +134,7 @@ public class Node {
             builder.append(offset).append("(R) - ");
         }
 
-        builder.append(location.latitude).append(" ").append(location.longitude);
+        builder.append(location.x).append(" ").append(location.y);
         if(status == TripStatus.WAITING){
             builder.append(" WAITING");
         }

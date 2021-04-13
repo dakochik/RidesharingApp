@@ -4,6 +4,7 @@ import server.model.tree.Node;
 import server.model.tree.Tree;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class Car {
     public static final double IMPOSSIBLE_TO_HANDLE = -1;
@@ -13,6 +14,8 @@ public class Car {
     public Tree updatedTree;
 
     public TripRequest tripRequest;
+
+    public TripRequest lastAddedTrip;
 
     public int currentCapacity;
 
@@ -35,6 +38,7 @@ public class Car {
             return IMPOSSIBLE_TO_HANDLE;
         }
 
+        lastAddedTrip = newTrip;
         boolean response = updatedTree.handleRequest(newTrip);
 
         if (!response) {
@@ -50,6 +54,7 @@ public class Car {
      */
     public void confirmRequest() {
         updatedTree.convertIntoSolution();
+        lastAddedTrip.carId = Optional.of(tripRequest.tripId);
         tree = updatedTree.getShallowCopy();
         --currentCapacity;
     }
@@ -77,10 +82,10 @@ public class Car {
         builder.append("https://www.google.ru/maps/dir/");
 
         Node node = tree.originalRoot;
-        builder.append(String.format("%s,%s/", node.location.latitude, node.location.longitude));
+        builder.append(String.format("%s,%s/", node.location.x, node.location.y));
         while (!node.children.isEmpty()) {
             node = node.children.get(0);
-            builder.append(String.format("%s,%s/", node.location.latitude, node.location.longitude));
+            builder.append(String.format("%s,%s/", node.location.x, node.location.y));
         }
 
         return builder.toString();

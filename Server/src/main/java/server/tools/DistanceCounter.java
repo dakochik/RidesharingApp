@@ -1,6 +1,6 @@
 package server.tools;
 
-import server.model.Location;
+import org.locationtech.jts.geom.Coordinate;
 import server.model.tree.Node;
 
 public class DistanceCounter {
@@ -29,17 +29,17 @@ public class DistanceCounter {
      * @param destination Точка прибытия
      * @return расстояние в км
      */
-    public static double measureDistance(Location origin, Location destination){
-        if ((origin.latitude == destination.latitude)
-                && (origin.longitude == destination.longitude)) {
+    public static double measureDistance(Coordinate origin, Coordinate destination){
+        if ((origin.x == destination.x)
+                && (origin.y == destination.y)) {
             return 0;
         }
         else {
-            double theta = origin.longitude - destination.longitude;
-            double dist = Math.sin(Math.toRadians(origin.latitude))
-                    * Math.sin(Math.toRadians(destination.latitude))
-                    + Math.cos(Math.toRadians(origin.latitude))
-                    * Math.cos(Math.toRadians(destination.latitude))
+            double theta = origin.y - destination.y;
+            double dist = Math.sin(Math.toRadians(origin.x))
+                    * Math.sin(Math.toRadians(destination.x))
+                    + Math.cos(Math.toRadians(origin.x))
+                    * Math.cos(Math.toRadians(destination.x))
                     * Math.cos(Math.toRadians(theta));
             dist = Math.acos(dist);
             dist = Math.toDegrees(dist);

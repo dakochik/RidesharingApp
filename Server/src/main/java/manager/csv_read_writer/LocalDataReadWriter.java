@@ -1,6 +1,6 @@
 package manager.csv_read_writer;
 
-import server.model.Location;
+import org.locationtech.jts.geom.Coordinate;
 import server.model.users.TripRequest;
 
 import java.io.BufferedReader;
@@ -28,9 +28,9 @@ public class LocalDataReadWriter {
             while(counter >= 0 && string!=null){
                 String[] arr = string.split(",");
 
-                res.add(new TripRequest(new Location(Double.parseDouble(arr[2]), Double.parseDouble(arr[3])),
-                        new Location(Double.parseDouble(arr[14]), Double.parseDouble(arr[13])),
-                        20, 0.8, LocalDateTime.now()));
+                res.add(new TripRequest(new Coordinate(Double.parseDouble(arr[2]), Double.parseDouble(arr[3])),
+                        new Coordinate(Double.parseDouble(arr[14]), Double.parseDouble(arr[13])),
+                        20, 0.8, LocalDateTime.now(), arr[0]));
 
                 string = reader.readLine();
 
@@ -61,13 +61,14 @@ public class LocalDataReadWriter {
 
                 try {
                     if (!(arr[15].isEmpty() || arr[16].isEmpty() || arr[18].isEmpty() || arr[19].isEmpty())) {
-                        res.add(new TripRequest(new Location(Double.parseDouble(arr[15].replace("\"", "")),
+                        res.add(new TripRequest(new Coordinate(Double.parseDouble(arr[15].replace("\"", "")),
                                 Double.parseDouble(arr[16].replace("\"", ""))),
-                                new Location(Double.parseDouble(arr[18].replace("\"", "")),
+                                new Coordinate(Double.parseDouble(arr[18].replace("\"", "")),
                                         Double.parseDouble(arr[19].replace("\"", ""))),
                                 20, 0.8,
                                 LocalDateTime.parse(arr[1].replace("\"", "")
-                                        .replace(".",":").substring(0, arr.length-2), format)));
+                                        .replace(".",":").substring(0, arr.length-2), format),
+                                arr[0].replace("\"", "")));
                     }
                 }
                 catch (Exception e){

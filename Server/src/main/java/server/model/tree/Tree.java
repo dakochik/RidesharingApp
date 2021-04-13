@@ -1,10 +1,11 @@
 package server.model.tree;
 
-import server.model.Location;
+import org.locationtech.jts.geom.Coordinate;
 import server.model.users.TripRequest;
 import server.tools.DistanceCounter;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 public class Tree {
@@ -62,6 +63,11 @@ public class Tree {
             initRoot(newOrigin, newDestination);
             res = true;
         } else {
+            var oD = newOrigin.arrivingTime;
+            var sth = oD.until(currentRoot.arrivingTime, ChronoUnit.MINUTES);
+            newOrigin.timeLimit -= sth * TripRequest.MINUTES_TO_KM;
+            newDestination.timeLimit = newOrigin.timeLimit;
+
             res = insertNode(currentRoot, new ArrayList<>() {{
                 add(newOrigin);
                 add(newDestination);
@@ -318,7 +324,7 @@ public class Tree {
     public void updateCurrentRootByTime(LocalDateTime time) {
         Node node = currentRoot.children.isEmpty() ? currentRoot : currentRoot.children.get(0);
 
-        ArrayList<Location> locations = new ArrayList<>();
+        ArrayList<Coordinate> locations = new ArrayList<>();
 
         while (node.arrivingTime.compareTo(time) < 0 && !node.children.isEmpty()) {
             if (node.type == NodeType.ORIGIN) {

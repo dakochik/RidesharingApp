@@ -1,6 +1,6 @@
 package server.tools;
 
-import server.model.Location;
+import org.locationtech.jts.geom.Coordinate;
 import server.model.users.Car;
 import server.model.users.TripRequest;
 import server.service.RideSharingComputer;
@@ -22,7 +22,7 @@ public class RequestsHandler {
      * @return все машины и запросы, подходящие под описанные критерии
      */
     public static AbstractMap.SimpleEntry<ArrayList<Car>, ArrayList<TripRequest>>
-    getTripsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Location loc, double r) {
+    getTripsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Coordinate loc, double r) {
         AbstractMap.SimpleEntry<ArrayList<Car>, ArrayList<TripRequest>> res
                 = new AbstractMap.SimpleEntry<>(new ArrayList<>(), new ArrayList<>());
 
@@ -60,17 +60,17 @@ public class RequestsHandler {
      * @return список всех подходящих машин
      */
     public static ArrayList<Car>
-    getCarsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Location loc, double width, double height) {
+    getCarsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Coordinate loc, double width, double height) {
         ArrayList<Car> res = new ArrayList<>();
 
         for (int i = 0; i < comp.cars.size(); ++i) {
             var car = comp.cars.get(i);
             if (car.tree.currentRoot.arrivingTime.compareTo(t.plusMinutes(windS)) < 0
                     && car.tree.currentRoot.arrivingTime.compareTo(t.minusMinutes(windS)) > 0
-                    && car.tree.currentRoot.location.latitude >= loc.latitude
-                    && car.tree.currentRoot.location.latitude <= loc.latitude + DistanceCounter.getLatitudeShift(width)
-                    && car.tree.currentRoot.location.longitude >= loc.longitude
-                    && car.tree.currentRoot.location.longitude <= loc.longitude + DistanceCounter.getLongitudeShift(height, loc.longitude)) {
+                    && car.tree.currentRoot.location.x >= loc.x
+                    && car.tree.currentRoot.location.x <= loc.x + DistanceCounter.getLatitudeShift(width)
+                    && car.tree.currentRoot.location.y >= loc.y
+                    && car.tree.currentRoot.location.y <= loc.y + DistanceCounter.getLongitudeShift(height, loc.y)) {
                 res.add(car);
             }
         }
@@ -91,17 +91,17 @@ public class RequestsHandler {
      * @return список всех подходящих запросов
      */
     public static ArrayList<TripRequest>
-    getRequestsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Location loc, double width, double height) {
+    getRequestsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Coordinate loc, double width, double height) {
         ArrayList<TripRequest> res = new ArrayList<>();
 
         for (int i = 0; i < comp.requests.size(); ++i) {
             var req = comp.requests.get(i);
             if (req.dateOfRequest.compareTo(t.plusMinutes(windS)) < 0
                     && req.dateOfRequest.compareTo(t.minusMinutes(windS)) > 0
-                    && req.origin.latitude >= loc.latitude
-                    && req.origin.latitude <= loc.latitude + DistanceCounter.getLatitudeShift(width)
-                    && req.origin.longitude >= loc.longitude
-                    && req.origin.longitude <= loc.longitude + DistanceCounter.getLongitudeShift(height, loc.longitude)) {
+                    && req.origin.x >= loc.x
+                    && req.origin.x <= loc.x + DistanceCounter.getLatitudeShift(width)
+                    && req.origin.y >= loc.y
+                    && req.origin.y <= loc.y + DistanceCounter.getLongitudeShift(height, loc.y)) {
                 res.add(req);
             }
         }
