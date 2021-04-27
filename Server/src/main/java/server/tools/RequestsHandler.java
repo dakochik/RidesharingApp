@@ -30,7 +30,7 @@ public class RequestsHandler {
             var car = comp.cars.get(i);
             if (car.tree.currentRoot.arrivingTime.compareTo(t.plusMinutes(windS)) < 0
                     && car.tree.currentRoot.arrivingTime.compareTo(t.minusMinutes(windS)) > 0
-                    && DistanceCounter.measureDistance(car.tree.currentRoot.location, loc) < r) {
+                    && GeoTools.measureDistance(car.tree.currentRoot.location, loc) < r) {
                 res.getKey().add(car);
             }
         }
@@ -39,7 +39,7 @@ public class RequestsHandler {
             var req = comp.requests.get(i);
             if (req.dateOfRequest.compareTo(t.plusMinutes(windS)) < 0
                     && req.dateOfRequest.compareTo(t.minusMinutes(windS)) > 0
-                    && DistanceCounter.measureDistance(req.origin, loc) < r) {
+                    && GeoTools.measureDistance(req.origin, loc) < r) {
                 res.getValue().add(req);
             }
         }
@@ -68,9 +68,9 @@ public class RequestsHandler {
             if (car.tree.currentRoot.arrivingTime.compareTo(t.plusMinutes(windS)) < 0
                     && car.tree.currentRoot.arrivingTime.compareTo(t.minusMinutes(windS)) > 0
                     && car.tree.currentRoot.location.x >= loc.x
-                    && car.tree.currentRoot.location.x <= loc.x + DistanceCounter.getLatitudeShift(width)
+                    && car.tree.currentRoot.location.x <= loc.x + GeoTools.getLatitudeShift(width)
                     && car.tree.currentRoot.location.y >= loc.y
-                    && car.tree.currentRoot.location.y <= loc.y + DistanceCounter.getLongitudeShift(height, loc.y)) {
+                    && car.tree.currentRoot.location.y <= loc.y + GeoTools.getLongitudeShift(height, loc.y)) {
                 res.add(car);
             }
         }
@@ -99,9 +99,9 @@ public class RequestsHandler {
             if (req.dateOfRequest.compareTo(t.plusMinutes(windS)) < 0
                     && req.dateOfRequest.compareTo(t.minusMinutes(windS)) > 0
                     && req.origin.x >= loc.x
-                    && req.origin.x <= loc.x + DistanceCounter.getLatitudeShift(width)
+                    && req.origin.x <= loc.x + GeoTools.getLatitudeShift(width)
                     && req.origin.y >= loc.y
-                    && req.origin.y <= loc.y + DistanceCounter.getLongitudeShift(height, loc.y)) {
+                    && req.origin.y <= loc.y + GeoTools.getLongitudeShift(height, loc.y)) {
                 res.add(req);
             }
         }

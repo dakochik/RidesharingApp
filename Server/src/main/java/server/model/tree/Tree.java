@@ -2,7 +2,7 @@ package server.model.tree;
 
 import org.locationtech.jts.geom.Coordinate;
 import server.model.users.TripRequest;
-import server.tools.DistanceCounter;
+import server.tools.GeoTools;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -55,7 +55,7 @@ public class Tree {
         newDestination.pairedLoc = tripRequest.origin;
         newDestination.timeLimit = tripRequest.maxWaitingMeasure;
         newDestination.tripCoefficient = tripRequest.distanceCoefficient;
-        newDestination.distanceFromOriginToNode = DistanceCounter.measureDistance(newOrigin, newDestination);
+        newDestination.distanceFromOriginToNode = GeoTools.measureDistance(newOrigin, newDestination);
         newDestination.arrivingTime = newOrigin.arrivingTime.plusMinutes((long) (newDestination.distanceFromOriginToNode / TripRequest.MINUTES_TO_KM));
 
         boolean res;
@@ -92,7 +92,7 @@ public class Tree {
         currentRoot = originalRoot;
         origin.children.add(destination);
         destination.parent = origin;
-        destination.distanceFromRootToNode = DistanceCounter.measureDistance(origin, destination);
+        destination.distanceFromRootToNode = GeoTools.measureDistance(origin, destination);
         destination.status = TripStatus.ACTIVE;
         origin.status = TripStatus.ACTIVE;
         updateSlackTime(destination);
@@ -110,8 +110,11 @@ public class Tree {
             return false;
         }
         Node node = nodes.get(0);
-        var dist = DistanceCounter.measureDistance(root, node);
-        if (isFeasible(root, node, depth + dist)) {
+//        System.out.printf("%s %s ->\t%s\n", node.arrivingTime, root.arrivingTime, (node.arrivingTime.getDayOfMonth() - root.arrivingTime.getDayOfMonth()) * 24 * 60
+//                + (node.arrivingTime.getHour() - root.arrivingTime.getHour()) * 60
+//                + (node.arrivingTime.getMinute() - root.arrivingTime.getMinute()));
+        var dist = GeoTools.measureDistance(root, node);
+        if (isFeasible(root, node, depth + dist) && isItNotFromFuture(node, root, depth + dist)) {
             boolean firstFlag = false;
 
             Node newNode = new Node(node.type, new ArrayList<>(),
@@ -126,8 +129,8 @@ public class Tree {
             for (Node child : root.children) {
                 firstFlag |= copyNode(newNode, child,
                         dist +
-                                DistanceCounter.measureDistance(newNode, child)
-                                - DistanceCounter.measureDistance(root, child));
+                                GeoTools.measureDistance(newNode, child)
+                                - GeoTools.measureDistance(root, child));
             }
 
             if (firstFlag && nodes.size() > 1) {
@@ -257,8 +260,8 @@ public class Tree {
             return true;
         }
         for (var child : root.children) {
-            if (dist - root.distanceFromRootToNode + DistanceCounter.measureDistance(newNode, child)
-                    - DistanceCounter.measureDistance(root, child) < child.slackTime) {
+            if (dist - root.distanceFromRootToNode + GeoTools.measureDistance(newNode, child)
+                    - GeoTools.measureDistance(root, child) < child.slackTime) {
                 return true;
             }
 
@@ -369,5 +372,13 @@ public class Tree {
             }
             node = node.parent;
         }
+
+    }
+
+    private static boolean isItNotFromFuture(Node newNode, Node currR, double dist) {
+        return ((newNode.arrivingTime.getDayOfMonth() - currR.arrivingTime.getDayOfMonth()) * 24 * 60
+                + (newNode.arrivingTime.getHour() - currR.arrivingTime.getHour()) * 60
+                + (newNode.arrivingTime.getMinute() - currR.arrivingTime.getMinute())) * TripRequest.MINUTES_TO_KM
+                - dist > 0;
     }
 }

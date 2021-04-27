@@ -7,9 +7,11 @@ module org.example {
     requires RidesharingServer;
     requires java.curl;
     requires org.jsoup;
-    requires json.simple;
+    requires org.json;
     requires org.locationtech.jts;
 
-    opens org.example to javafx.fxml;
-    exports org.example;
+    opens org.app to javafx.fxml;
+    exports org.app;
+    exports org.app.controller;
+    opens org.app.controller to javafx.fxml;
 }

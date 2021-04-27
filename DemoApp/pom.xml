@@ -50,9 +50,9 @@
             <version>1.13.1</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
         </dependency>
         <dependency>
             <groupId>org.locationtech.jts</groupId>
@@ -75,7 +75,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.1</version>
                 <configuration>
-                    <mainClass>org.example.App</mainClass>
+                    <mainClass>org.app.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>

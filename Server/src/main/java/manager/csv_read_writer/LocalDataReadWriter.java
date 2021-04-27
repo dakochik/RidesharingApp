@@ -17,6 +17,7 @@ public class LocalDataReadWriter {
     //
     private static final String pathToFile ="./././././././././RideAustin_Weather.csv"; // Git не пропустил этот файл
     private static final String pathToFile2 ="./././././././././Chicago_5000.csv";
+    private static final String pathToFile2Additional ="./././././././././Chicago_5000_Offset5000.csv";
 
     public static ArrayList<TripRequest> getData(int size) throws IOException {
         ArrayList<TripRequest> res = new ArrayList<>();
@@ -65,7 +66,7 @@ public class LocalDataReadWriter {
                                 Double.parseDouble(arr[16].replace("\"", ""))),
                                 new Coordinate(Double.parseDouble(arr[18].replace("\"", "")),
                                         Double.parseDouble(arr[19].replace("\"", ""))),
-                                20, 0.8,
+                                TripRequest.DEFAULT_WAITING_TIME, TripRequest.DEFAULT_TRIP_COEFFICIENT,
                                 LocalDateTime.parse(arr[1].replace("\"", "")
                                         .replace(".",":").substring(0, arr.length-2), format),
                                 arr[0].replace("\"", "")));

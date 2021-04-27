@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class RideSharingComputer {
-    public ArrayList<Car> cars;
+    private IterNotifier notifier;
+    public final ArrayList<Car> cars;
 
     public ArrayList<TripRequest> requests;
 
@@ -16,13 +17,28 @@ public class RideSharingComputer {
     public RideSharingComputer() {
         cars = new ArrayList<>();
         requests = new ArrayList<>();
+        notifier = new IterNotifier() {
+            @Override
+            public void eventNotifier() {
+            }
+
+            @Override
+            public void eventNotifier(double number) {
+            }
+        };
+    }
+
+    public RideSharingComputer(IterNotifier notifier) {
+        cars = new ArrayList<>();
+        requests = new ArrayList<>();
+        this.notifier = notifier;
     }
 
     public void addTask(TripRequest request) {
         requests.add(request);
     }
 
-    public void addAllTask(Collection<TripRequest> requests) {
+    public void addAllTasks(Collection<TripRequest> requests) {
         this.requests.addAll(requests);
     }
 
@@ -34,6 +50,14 @@ public class RideSharingComputer {
         this.cars.addAll(cars);
     }
 
+    public void clearRequests() {
+        requests.clear();
+    }
+
+    public void clearTrips() {
+        cars.clear();
+    }
+
     /**
      * Запускает рекурсивный подбор машины для списка запросов.
      */
@@ -42,6 +66,7 @@ public class RideSharingComputer {
             RideSharingComputerRecursiveTask task = new RideSharingComputerRecursiveTask(cars, requests.get(i));
             var res = task.compute();
             res.ifPresent(this::handleUpdating);
+            notifier.eventNotifier();
         }
     }
 

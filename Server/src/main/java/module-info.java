@@ -6,6 +6,5 @@ module RidesharingServer {
     exports server.tools;
     exports server.model.users;
     exports server.model.tree;
-    exports server.model;
     exports server;
 }

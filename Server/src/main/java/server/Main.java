@@ -5,8 +5,12 @@ import server.tools.CSVParser;
 import server.model.users.Car;
 import server.service.RideSharingComputer;
 
+import java.io.IOException;
+
+import static server.tools.CSVParser.fetchMainDataAndSetExactDate;
+
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         ////Простой пример 1
 //        TripRequest tr1 = new TripRequest(new Location(55.690351, 37.860461)
 //                , new Location(55.680171, 37.850424), 10, 0.7, LocalDate.now());
@@ -36,37 +40,37 @@ public class Main {
 //        System.out.println(comp.cars.get(1).tree.getStringRepresentation());
 //        System.out.println(comp.cars.get(1).getUri());
 
-        //Пример 2 с 5000 запрсами из г.Чикаго
-        RideSharingComputer comp = new RideSharingComputer();
-        try {
-            var res = LocalDataReadWriter.getDataSec(5000);
-            for(int i =0; i < 2*res.size()/3; ++i){
-                comp.addTask(res.get(i));
-            }
-            for(int i =2*res.size()/3 + 1; i < res.size(); ++i){
-                comp.addCar(new Car(3,res.get(i)));
-            }
-
-            System.out.println(comp.requests.size());
-            comp.compute();
-
-            System.out.println(comp.confirmedReq);
-
-            CSVParser.carsWriter(comp);
-            CSVParser.requestsWriter(comp);
-
-            // Вывод строкового представления деревьев решений
+//        //Пример 2 с 5000 запрсами из г.Чикаго
+//        RideSharingComputer comp = new RideSharingComputer();
+//        try {
+//            var res = LocalDataReadWriter.getDataSec(5000);
+//            for(int i =0; i < 2*res.size()/3; ++i){
+//                comp.addTask(res.get(i));
+//            }
+//            for(int i =2*res.size()/3 + 1; i < res.size(); ++i){
+//                comp.addCar(new Car(3,res.get(i)));
+//            }
+//
+//            System.out.println(comp.requests.size());
+//            comp.compute();
+//
+//            System.out.println(comp.confirmedReq);
+//
+//            CSVParser.carsWriter(comp);
+//            CSVParser.requestsWriter(comp);
+//
+//             //Вывод строкового представления деревьев решений
 //            for (var a: comp.cars) {
 //                System.out.println(a.tree.getStringRepresentation());
 //            }
-//
-//            // Пример движения одной машины и проверка результата
-//            comp.cars.get(comp.cars.size() - 4).updateLocation(comp.cars.get(comp.cars.size() - 4).tree.originalRoot.arrivingTime.plusMinutes(1));
-//            System.out.println(comp.cars.get(comp.cars.size() - 4).tree.getStringRepresentation());
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+////
+////            // Пример движения одной машины и проверка результата
+////            comp.cars.get(comp.cars.size() - 4).updateLocation(comp.cars.get(comp.cars.size() - 4).tree.originalRoot.arrivingTime.plusMinutes(1));
+////            System.out.println(comp.cars.get(comp.cars.size() - 4).tree.getStringRepresentation());
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
 
 //        // Обоснование id =37
 //        //-87.64707851,41.94257718],[-87.65641153,41.93623718],[-87.65177051,41.94269184
@@ -77,17 +81,17 @@ public class Main {
 //        var l4 = new Location(-87.65177051,41.94269184);
 //        var l5 = new Location(-87.62614559,41.90278805);
 //
-//        double d1 = DistanceCounter.measureDistance(l1, l2) +
-//                DistanceCounter.measureDistance(l2,l3) + DistanceCounter.measureDistance(l3, l4) +
-//                DistanceCounter.measureDistance(l4, l5);
+//        double d1 = GeoTools.measureDistance(l1, l2) +
+//                GeoTools.measureDistance(l2,l3) + GeoTools.measureDistance(l3, l4) +
+//                GeoTools.measureDistance(l4, l5);
 //
-//        double d2 = DistanceCounter.measureDistance(l1, l4) +
-//                DistanceCounter.measureDistance(l4,l2) + DistanceCounter.measureDistance(l2, l3) +
-//                DistanceCounter.measureDistance(l3, l5);
+//        double d2 = GeoTools.measureDistance(l1, l4) +
+//                GeoTools.measureDistance(l4,l2) + GeoTools.measureDistance(l2, l3) +
+//                GeoTools.measureDistance(l3, l5);
 //
-//        double d3 = DistanceCounter.measureDistance(l1, l2) +
-//                DistanceCounter.measureDistance(l2,l4) + DistanceCounter.measureDistance(l4, l3) +
-//                DistanceCounter.measureDistance(l3, l5);
+//        double d3 = GeoTools.measureDistance(l1, l2) +
+//                GeoTools.measureDistance(l2,l4) + GeoTools.measureDistance(l4, l3) +
+//                GeoTools.measureDistance(l3, l5);
 //
 //        System.out.println(d1);
 //        System.out.println(d2);
@@ -103,5 +107,6 @@ public class Main {
 //        catch (IOException e){
 //
 //        }
+        //fetchMainDataAndSetExactDate();
     }
 }
