@@ -1,0 +1,17 @@
+.button {
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-background-radius: 20;
+    -fx-background-color: #F1D5DC;
+    -fx-border-radius: 20;
+    -fx-border-width: 3;
+    -fx-border-color: #FFFFFF
+}
+
+.button:hover{
+    -fx-background-color: #F0BFCB;
+}
+
+.button:pressed{
+    -fx-background-color: #EE97AC;
+}

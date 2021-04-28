@@ -9,6 +9,7 @@ module org.example {
     requires org.jsoup;
     requires org.json;
     requires org.locationtech.jts;
+    requires com.jfoenix;
 
     opens org.app to javafx.fxml;
     exports org.app;

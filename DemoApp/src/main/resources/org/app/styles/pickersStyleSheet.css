@@ -1,0 +1,17 @@
+.date-picker{
+    -fx-background-color: #EFE0B3;
+    -fx-text-fill: blue;
+}
+
+.date-picker > .text-field{
+    -fx-background-color: #EFE0B3;
+}
+
+.date-picker:editable > .arrow-button > * {
+    -fx-opacity: 0; /* Set the node in the button to be visible */
+}
+
+.date-picker > .arrow-button{
+    /*-fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color*/
+    -fx-background-color: #EFE0B3;
+}

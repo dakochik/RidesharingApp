@@ -7,11 +7,18 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
+import com.jfoenix.controls.JFXDatePicker;
+import com.jfoenix.controls.JFXTextField;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.locationtech.jts.geom.Coordinate;
 import org.tools.CartoDataBaseAdapter;
 import server.model.users.Car;
@@ -48,26 +55,35 @@ public class PrimaryController implements Initializable {
         }
     };
 
+    public AnchorPane paneLikeBane;
+
     public ProgressBar prBar;
+
     public Label lblStart;
-    public Button btnStart;
     public Label lblPause;
-    public Button btnPause;
     public Label lblUpdate;
-    public Button btnUpdate;
     public Label lblCont;
+
+    public Button btnStart;
+    public Button btnPause;
+    public Button btnUpdate;
     public Button btnCont;
-    public TextArea loggerTA;
-    public TextField orLatTF;
-    public TextField orLonTF;
-    public TextField idTF;
     public Button btnAdd;
-    public DatePicker dP;
-    public TextField destLatTF;
-    public TextField destLonTF;
-    public TextField hoursTF;
-    public TextField minutesTF;
     public Button btnAddFew;
+    public Button closeBtn;
+    public Button curtailBtn;
+
+    public TextArea loggerTA;
+
+    public JFXTextField orLatTF;
+    public JFXTextField orLonTF;
+    public JFXTextField idTF;
+    public JFXTextField destLatTF;
+    public JFXTextField destLonTF;
+    public JFXTextField hoursTF;
+    public JFXTextField minutesTF;
+
+    public DatePicker dP;
 
     public PrimaryController() {
         comp = new RideSharingComputer(notifier);
@@ -77,6 +93,8 @@ public class PrimaryController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         initTFListeners();
         adapter = new CartoDataBaseAdapter();
+
+        btnPause.setDisable(true);
 
         btnCont.setDisable(true);
     }
@@ -104,6 +122,7 @@ public class PrimaryController implements Initializable {
             timer.cancel();
         }
         btnCont.setDisable(true);
+        btnPause.setDisable(false);
         Task<Void> taskF = clearTablesAndDownloadData();
 
         taskF.setOnSucceeded(it -> {
@@ -415,5 +434,13 @@ public class PrimaryController implements Initializable {
         alert.showAndWait();
     }
 
+    public void btnClosePressed(ActionEvent event){
+        var stage = (Stage)((Button)event.getSource()).getScene().getWindow();
+        stage.close();
+    }
 
+    public void btnCurtailPressed(ActionEvent event){
+        Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
+        stage.setIconified(true);
+    }
 }

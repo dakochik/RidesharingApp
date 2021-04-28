@@ -1,43 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="668.0" prefWidth="1023.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.app.controller.PrimaryController">
+<AnchorPane id="paneLikeBane" fx:id="paneLikeBane" prefHeight="650.0" prefWidth="1023.0" style="-fx-background-color: #FFF8E3" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.app.controller.PrimaryController">
    <children>
-      <ProgressBar fx:id="prBar" layoutX="288.0" layoutY="381.0" prefHeight="18.0" prefWidth="419.0" progress="0.0" />
-      <Pane layoutX="25.0" layoutY="26.0" prefHeight="374.0" prefWidth="250.0" style="-fx-background-color: #808080; -fx-background-radius: 10;">
-         <Label fx:id="lblStart" layoutX="11.0" layoutY="14.0" maxWidth="200" text="Очистить таблицы запросов и поездок, начать алгоритм сначала:" wrapText="true" />
-         <Button fx:id="btnStart" layoutX="9.0" layoutY="55.0" mnemonicParsing="false" onAction="#btnStartPressed" prefHeight="25.0" prefWidth="85.0" text="Начать" />
-         <Label fx:id="lblPause" layoutX="11.0" layoutY="91.0" maxWidth="200" text="Приостановить вычисления:" wrapText="true" />
-         <Button fx:id="btnPause" layoutX="12.0" layoutY="114.0" mnemonicParsing="false" onAction="#btnPausePressed" prefHeight="25.0" prefWidth="85.0" text="Пауза" />
-         <Label fx:id="lblUpdate" layoutX="11.0" layoutY="208.0" maxWidth="200" text="Совершить итерацию алгоритма, не ожидая таймера:" wrapText="true" />
-         <Button fx:id="btnUpdate" layoutX="10.0" layoutY="248.0" mnemonicParsing="false" onAction="#btnUpdatePressed" prefHeight="25.0" prefWidth="85.0" text="Обновить" />
-         <Label fx:id="lblCont" layoutX="11.0" layoutY="149.0" text="Продолжить" />
-         <Button fx:id="btnCont" layoutX="10.0" layoutY="175.0" mnemonicParsing="false" onAction="#btnContinuePressed" text="Продолжить" prefWidth="85.0"/>
-         <Button fx:id="btnAddFew" layoutX="10.0" layoutY="311.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="85.0" onAction="#btnAddFewPressed" text="Добавить" />
-         <Label layoutX="14.0" layoutY="285.0" text="Добавить данные из файла" />
-      </Pane>
-      <TextArea fx:id="loggerTA" layoutX="288.0" layoutY="26.0" prefHeight="347.0" prefWidth="419.0" />
-      <Pane layoutX="25.0" layoutY="412.0" prefHeight="238.0" prefWidth="991.0" style="-fx-background-color: #808080; -fx-background-radius: 10;">
+      <ProgressBar fx:id="prBar" layoutX="287.0" layoutY="361.0" prefHeight="18.0" prefWidth="714.0" progress="0.0" />
+<!--      <Pane layoutX="10.0" layoutY="10.0" prefHeight="374.0" prefWidth="250.0" style="-fx-background-color: #FAF6EA; -fx-background-radius: 10;">-->
+<!--         <Label fx:id="lblStart" layoutX="11.0" layoutY="14.0" maxWidth="200" text="Очистить таблицы запросов и поездок, начать алгоритм сначала:" wrapText="true" />-->
+<!--         <Label fx:id="lblPause" layoutX="11.0" layoutY="91.0" maxWidth="200" text="Приостановить вычисления:" wrapText="true" />-->
+<!--         <Label fx:id="lblUpdate" layoutX="11.0" layoutY="208.0" maxWidth="200" text="Совершить итерацию алгоритма, не ожидая таймера:" wrapText="true" />-->
+<!--         <Label fx:id="lblCont" layoutX="11.0" layoutY="149.0" text="Продолжить" />-->
+<!--         <Label layoutX="14.0" layoutY="285.0" text="Добавить данные из файла" />-->
+
+<!--         <Button fx:id="btnStart" layoutX="9.0" layoutY="55.0" mnemonicParsing="false" onAction="#btnStartPressed" prefHeight="30.0" prefWidth="200.0" style="-fx-background-radius: 30; -fx-background-color: #D5F1EA; -fx-border-color: #000000; -fx-border-radius: 40; -fx-border-width: 2" text="Начать" />-->
+<!--         <Button fx:id="btnUpdate" layoutX="10.0" layoutY="248.0" mnemonicParsing="false" onAction="#btnUpdatePressed" prefHeight="30.0" prefWidth="200.0" style="-fx-background-radius: 30; -fx-background-color: #D5F1EA; -fx-border-color: #000000; -fx-border-radius: 40; -fx-border-width: 2" text="Обновить" />-->
+<!--         <Button fx:id="btnPause" layoutX="12.0" layoutY="114.0" mnemonicParsing="false" onAction="#btnPausePressed" prefHeight="30.0" prefWidth="200.0" style="-fx-background-radius: 30; -fx-background-color: #D5F1EA; -fx-border-color: #000000; -fx-border-radius: 40; -fx-border-width: 2" text="Пауза" />-->
+<!--         <Button fx:id="btnCont" layoutX="10.0" layoutY="175.0" mnemonicParsing="false" onAction="#btnContinuePressed" prefHeight="30.0" prefWidth="200.0" style="-fx-background-radius: 30; -fx-background-color: #D5F1EA; -fx-border-color: #000000; -fx-border-radius: 40; -fx-border-width: 2" text="Продолжить" />-->
+<!--         <Button fx:id="btnAddFew" layoutX="10.0" layoutY="311.0" mnemonicParsing="false" onAction="#btnAddFewPressed" prefHeight="30.0" prefWidth="200.0" style="-fx-background-radius: 30; -fx-background-color: #D5F1EA; -fx-border-color: #000000; -fx-border-radius: 40; -fx-border-width: 2" text="Добавить" />-->
+<!--      </Pane>-->
+<!--      <Label fx:id="lblStart" layoutX="11.0" layoutY="14.0" maxWidth="200" text="Очистить таблицы запросов и поездок, начать алгоритм сначала:" wrapText="true" />-->
+<!--      <Label fx:id="lblPause" layoutX="11.0" layoutY="91.0" maxWidth="200" text="Приостановить вычисления:" wrapText="true" />-->
+<!--      <Label fx:id="lblUpdate" layoutX="11.0" layoutY="208.0" maxWidth="200" text="Совершить итерацию алгоритма, не ожидая таймера:" wrapText="true" />-->
+<!--      <Label fx:id="lblCont" layoutX="11.0" layoutY="149.0" text="Продолжить" />-->
+<!--      <Label layoutX="14.0" layoutY="285.0" text="Добавить данные из файла" />-->
+
+      <Button fx:id="closeBtn" layoutX="975.0" layoutY="14.0" mnemonicParsing="false" onAction="#btnClosePressed" prefHeight="25" prefWidth="25" stylesheets="@styles/closeButtonStyleSheet.css" />
+      <Button fx:id="curtailBtn" layoutX="940.0" layoutY="14.0" mnemonicParsing="false" onAction="#btnCurtailPressed" prefHeight="25" prefWidth="25" stylesheets="@styles/hideButtonStyleSheet.css" />
+
+      <Button fx:id="btnStart" layoutX="10.0" layoutY="50.0" mnemonicParsing="false" onAction="#btnStartPressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Начать" />
+      <Button fx:id="btnUpdate" layoutX="10.0" layoutY="120.0" mnemonicParsing="false" onAction="#btnUpdatePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Обновить" />
+      <Button fx:id="btnPause" layoutX="12.0" layoutY="190.0" mnemonicParsing="false" onAction="#btnPausePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Пауза" />
+      <Button fx:id="btnCont" layoutX="10.0" layoutY="260.0" mnemonicParsing="false" onAction="#btnContinuePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Продолжить" />
+      <Button fx:id="btnAddFew" layoutX="12.0" layoutY="330.0" mnemonicParsing="false" onAction="#btnAddFewPressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Добавить" />
+
+      <TextArea fx:id="loggerTA" layoutX="287.0" layoutY="50.0" prefHeight="306.0" prefWidth="714.0" />
+      <Pane layoutX="16.0" layoutY="394.0" prefHeight="238.0" prefWidth="991.0" style="-fx-background-color: #EFE0B3; -fx-background-radius: 10;">
          <children>
             <Label layoutX="13.0" layoutY="47.0" text="Широта" />
             <Label layoutX="12.0" layoutY="111.0" text="Долгота" />
-            <TextField fx:id="orLatTF" layoutX="14.0" layoutY="68.0" prefHeight="25.0" prefWidth="174.0" />
-            <TextField fx:id="orLonTF" layoutX="14.0" layoutY="135.0" prefHeight="25.0" prefWidth="174.0" />
-            <TextField fx:id="idTF" editable="false" layoutX="653.0" layoutY="55.0" prefHeight="25.0" prefWidth="323.0" />
             <Label layoutX="653.0" layoutY="23.0" text="Автоматически сгенерированный идентификатор поездки" />
-            <Button fx:id="btnAdd" layoutX="889.0" layoutY="101.0" mnemonicParsing="false" onAction="#btnAddPressed" text="Добавить" />
-            <DatePicker fx:id="dP" layoutX="14.0" layoutY="199.0" />
             <Label layoutX="14.0" layoutY="172.0" text="Дата и время запроса" />
             <Label layoutX="13.0" layoutY="15.0" text="Отправление" />
             <Label layoutX="227.0" layoutY="15.0" text="Прибытие" />
-            <TextField fx:id="destLatTF" layoutX="227.0" layoutY="68.0" prefHeight="25.0" prefWidth="181.0" />
-            <TextField fx:id="destLonTF" layoutX="227.0" layoutY="135.0" prefHeight="25.0" prefWidth="181.0" />
             <Label layoutX="227.0" layoutY="172.0" text="Часы" />
             <Label layoutX="327.0" layoutY="172.0" text="Минуты" />
-            <TextField fx:id="hoursTF" layoutX="227.0" layoutY="199.0" prefHeight="25.0" prefWidth="80.0" />
-            <TextField fx:id="minutesTF" layoutX="327.0" layoutY="199.0" prefHeight="25.0" prefWidth="80.0" />
+
+            <JFXTextField fx:id="orLatTF" layoutX="14.0" layoutY="68.0" prefHeight="25.0" prefWidth="174.0" stylesheets="@styles/tfStyleSheet.css" />
+            <JFXTextField fx:id="orLonTF" layoutX="14.0" layoutY="135.0" prefHeight="25.0" prefWidth="174.0" stylesheets="@styles/tfStyleSheet.css"/>
+            <JFXTextField fx:id="idTF" editable="false" layoutX="653.0" layoutY="68.0" prefHeight="25.0" prefWidth="323.0" stylesheets="@styles/tfStyleSheet.css"/>
+            <JFXTextField fx:id="destLatTF" layoutX="227.0" layoutY="68.0" prefHeight="25.0" prefWidth="181.0" stylesheets="@styles/tfStyleSheet.css"/>
+            <JFXTextField fx:id="destLonTF" layoutX="227.0" layoutY="135.0" prefHeight="25.0" prefWidth="181.0" stylesheets="@styles/tfStyleSheet.css"/>
+            <JFXTextField fx:id="hoursTF" layoutX="227.0" layoutY="199.0" prefHeight="25.0" prefWidth="80.0" stylesheets="@styles/tfStyleSheet.css"/>
+            <JFXTextField fx:id="minutesTF" layoutX="327.0" layoutY="199.0" prefHeight="25.0" prefWidth="80.0" stylesheets="@styles/tfStyleSheet.css"/>
+
+            <Button fx:id="btnAdd" layoutX="908.0" layoutY="122.0" mnemonicParsing="false" onAction="#btnAddPressed" text="Добавить" />
+            <DatePicker fx:id="dP" layoutX="14.0" layoutY="199.0" stylesheets="@styles/pickersStyleSheet.css"/>
          </children></Pane>
    </children>
 </AnchorPane>
