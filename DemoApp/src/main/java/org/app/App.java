@@ -5,12 +5,15 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * JavaFX App
@@ -21,9 +24,12 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        Scene scene = new Scene(loadFXML("primary"));
-        stage.initStyle(StageStyle.UNDECORATED);
+        Scene scene = new Scene(loadFXML("primary"), Color.TRANSPARENT);
+        stage.initStyle(StageStyle.TRANSPARENT);
         stage.setScene(scene);
+
+        var openBrowser = (Button)scene.lookup("#browserBtn");
+        openBrowser.setOnAction((event)-> openBrowser());
 
         var pane = (AnchorPane)scene.lookup("#paneLikeBane");
         pane.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -51,6 +57,13 @@ public class App extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    public void openBrowser(){
+        System.out.println(App.class.getResource("web/index.html").getPath());
+        URL url = App.class.getResource("web/index.html");
+        System.out.println(url.toExternalForm());
+        getHostServices().showDocument(url.toExternalForm());
     }
 }
 

@@ -73,7 +73,6 @@ public class CartoDataBaseAdapter {
             String originLong = requestObj.get(TableHeaders.PICKUP_CENTROID_LONGITUDE.val).toString();
             String destLat = requestObj.get(TableHeaders.DROPOFF_CENTROID_LATITUDE.val).toString();
             String destLong = requestObj.get(TableHeaders.DROPOFF_CENTROID_LONGITUDE.val).toString();
-            System.out.printf("%s\t%s\n", originLat, originLong);
             result.add(new TripRequest(new Coordinate(Double.parseDouble(originLat), Double.parseDouble(originLong)),
                     new Coordinate(Double.parseDouble(destLat), Double.parseDouble(destLong)),
                     TripRequest.DEFAULT_WAITING_TIME, TripRequest.DEFAULT_TRIP_COEFFICIENT,

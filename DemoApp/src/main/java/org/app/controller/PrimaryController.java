@@ -4,21 +4,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 import com.jfoenix.controls.JFXDatePicker;
 import com.jfoenix.controls.JFXTextField;
+import com.jfoenix.controls.JFXTimePicker;
+import com.jfoenix.validation.RequiredFieldValidator;
+import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.app.validator.DoubleLatLonValidator;
 import org.locationtech.jts.geom.Coordinate;
 import org.tools.CartoDataBaseAdapter;
 import server.model.users.Car;
@@ -40,6 +41,7 @@ public class PrimaryController implements Initializable {
             prBar.setProgress(0);
             getUpdates();
             computeAndPush(true);
+            prBar.setProgress(0);
         }
     }
 
@@ -59,11 +61,6 @@ public class PrimaryController implements Initializable {
 
     public ProgressBar prBar;
 
-    public Label lblStart;
-    public Label lblPause;
-    public Label lblUpdate;
-    public Label lblCont;
-
     public Button btnStart;
     public Button btnPause;
     public Button btnUpdate;
@@ -80,10 +77,9 @@ public class PrimaryController implements Initializable {
     public JFXTextField idTF;
     public JFXTextField destLatTF;
     public JFXTextField destLonTF;
-    public JFXTextField hoursTF;
-    public JFXTextField minutesTF;
 
-    public DatePicker dP;
+    public JFXDatePicker dP;
+    public JFXTimePicker tP;
 
     public PrimaryController() {
         comp = new RideSharingComputer(notifier);
@@ -100,25 +96,53 @@ public class PrimaryController implements Initializable {
     }
 
     private void initTFListeners() {
-        orLonTF.textProperty().addListener(((observable, oldValue, newValue) -> orLonTF
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
-        orLatTF.textProperty().addListener(((observable, oldValue, newValue) -> orLatTF
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
-        destLonTF.textProperty().addListener(((observable, oldValue, newValue) -> destLonTF
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
-        destLatTF.textProperty().addListener(((observable, oldValue, newValue) -> destLatTF
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
-        dP.valueProperty().addListener(((observable, oldValue, newValue) -> dP
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
-        hoursTF.textProperty().addListener(((observable, oldValue, newValue) -> hoursTF
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
-        minutesTF.textProperty().addListener(((observable, oldValue, newValue) -> minutesTF
-                .setStyle("-fx-text-box-border: ladder(-fx-background, black 10%, derive(-fx-background,-15%) 30%);")));
+        RequiredFieldValidator validator = new RequiredFieldValidator();
+        validator.setMessage("Введите значение");
+        DoubleLatLonValidator lonValidator = new DoubleLatLonValidator(180);
+        DoubleLatLonValidator latValidator = new DoubleLatLonValidator(90);
+
+        orLonTF.getValidators().addAll(validator, lonValidator);
+        orLatTF.getValidators().addAll(validator, latValidator);
+        destLonTF.getValidators().addAll(validator, lonValidator);
+        destLatTF.getValidators().addAll(validator, latValidator);
+        dP.getValidators().add(validator);
+        tP.getValidators().add(validator);
+
+        orLonTF.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                orLonTF.validate();
+            }
+        });
+        orLatTF.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                orLatTF.validate();
+            }
+        });
+        destLonTF.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                destLonTF.validate();
+            }
+        });
+        destLatTF.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                destLatTF.validate();
+            }
+        });
+        dP.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                dP.validate();
+            }
+        });
+        tP.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                tP.validate();
+            }
+        });
     }
 
     public void btnStartPressed(ActionEvent event) {
         step = 1;
-        if(timer!=null) {
+        if (timer != null) {
             timer.cancel();
         }
         btnCont.setDisable(true);
@@ -126,6 +150,7 @@ public class PrimaryController implements Initializable {
         Task<Void> taskF = clearTablesAndDownloadData();
 
         taskF.setOnSucceeded(it -> {
+            prBar.setProgress(0);
             loggerTA.appendText("Timer is set\n");
             timer = new Timer();
             timer.schedule(new CustomTimerTask(), 60000, 60000);
@@ -134,6 +159,8 @@ public class PrimaryController implements Initializable {
     }
 
     public void btnPausePressed(ActionEvent event) {
+        loggerTA.appendText("\nComputing has been paused\n");
+        prBar.setProgress(0);
         btnCont.setDisable(false);
         btnPause.setDisable(true);
         timer.cancel();
@@ -141,23 +168,27 @@ public class PrimaryController implements Initializable {
     }
 
     public void btnUpdatePressed(ActionEvent event) {
+        prBar.setProgress(0);
         timer.cancel();
         timer.purge();
 
         Task<Void> updateAndPush = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                loggerTA.appendText("\nForce updating...\n");
-                prBar.setProgress(0.2);
                 computeAndPush(true);
                 return null;
             }
         };
 
+        loggerTA.appendText("\nForce updating...\n");
+        prBar.setProgress(0.2);
+
         updateAndPush.setOnSucceeded(it -> {
             btnCont.setDisable(true);
             btnPause.setDisable(false);
+            prBar.setProgress(0);
             timer = new Timer();
+            loggerTA.appendText("Timer is resumed\n");
             timer.schedule(new CustomTimerTask(), 60000, 60000);
         });
 
@@ -168,31 +199,40 @@ public class PrimaryController implements Initializable {
         btnCont.setDisable(true);
         btnPause.setDisable(false);
 
+        prBar.setProgress(0);
         timer = new Timer();
+        loggerTA.appendText("Timer is resumed\n");
         timer.schedule(new CustomTimerTask(), 60000, 60000);
     }
 
     public void btnAddPressed(ActionEvent event) {
+        var newRequest = verifyRequest();
 
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                var newRequest = verifyRequest();
-                if (newRequest.isPresent()) {
-                    idTF.setText(newRequest.get().tripId);
-                    List<TripRequest> reqL = new ArrayList<>() {{
-                        add(newRequest.get());
-                    }};
+        if (newRequest.isPresent()) {
+            idTF.setText(newRequest.get().tripId);
+            List<TripRequest> reqL = new ArrayList<>() {{
+                add(newRequest.get());
+            }};
+
+            Task<Void> task = new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
                     synchronized (comp) {
                         comp.addAllTasks(reqL);
                     }
-                    adapter.pushRequests(reqL);
+                    Platform.runLater(() -> loggerTA.appendText("Pushing request...\n"));
+                    try {
+                        adapter.pushRequests(reqL);
+                        Platform.runLater(() -> loggerTA.appendText("Request was successfully added\n"));
+                    } catch (IllegalAccessException e) {
+                        Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to push new request:\n" + e.getMessage() + "\n"));
+                    }
+                    return null;
                 }
-                return null;
-            }
-        };
+            };
 
-        new Thread(task).start();
+            new Thread(task).start();
+        }
     }
 
     public void btnAddFewPressed(ActionEvent event) {
@@ -201,7 +241,7 @@ public class PrimaryController implements Initializable {
         fileChooser.setTitle("Add data from file");
         File destination = fileChooser.showOpenDialog(btnAddFew.getScene().getWindow());
 
-        if(destination == null){
+        if (destination == null) {
             return;
         }
 
@@ -219,14 +259,20 @@ public class PrimaryController implements Initializable {
                     synchronized (comp) {
                         comp.addAllTasks(reqL);
                     }
-
-                    adapter.pushRequests(reqL);
+                    Platform.runLater(() -> loggerTA.appendText("Pushing new requests...\n"));
+                    try {
+                        adapter.pushRequests(reqL);
+                        Platform.runLater(() -> loggerTA.appendText("Requests were successfully added\n"));
+                    } catch (IllegalAccessException e) {
+                        Platform.runLater(() ->
+                                loggerTA.appendText("[ERROR] : Impossible to push new requests:\n" + e.getMessage() + "\n"));
+                    }
                     return null;
                 }
             };
 
             new Thread(task).start();
-        }catch (IOException e){
+        } catch (IOException e) {
             showAlert(Alert.AlertType.WARNING, "Incorrect input data",
                     String.format("File %s contains incorrect input data", destination.getPath()));
         }
@@ -253,34 +299,44 @@ public class PrimaryController implements Initializable {
                     comp.clearRequests();
                 }
 
-                loggerTA.appendText("Clearing requests table...\n");
+                Platform.runLater(() -> loggerTA.appendText("Clearing requests table...\n"));
                 try {
                     adapter.clearRequestsTable();
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to clear requests table:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() ->
+                            loggerTA.appendText("[ERROR] : Impossible to clear requests table:\n" + e.getMessage() + "\n"));
                     return null;
                 }
-                notifier.eventNotifier(0.05);
 
-                loggerTA.appendText("Clearing trips table...\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.05);
+                    loggerTA.appendText("Clearing trips table...\n");
+                });
+
                 try {
                     adapter.clearTripsTable();
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to clear trips table:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() ->
+                            loggerTA.appendText("[ERROR] : Impossible to clear trips table:\n" + e.getMessage() + "\n"));
                     return null;
                 }
-                notifier.eventNotifier(0.05);
 
-                loggerTA.appendText("Downloading data...\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.05);
+                    loggerTA.appendText("Downloading data...\n");
+                });
+
                 try {
                     distributeData(adapter.readRequests());
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to get data:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to get data:\n" + e.getMessage() + "\n"));
                     return null;
                 }
 
-                notifier.eventNotifier(0.1);
-                loggerTA.appendText("We successfully got data\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.1);
+                    loggerTA.appendText("We successfully got data\n");
+                });
 
                 computeAndPush(false);
                 return null;
@@ -291,65 +347,73 @@ public class PrimaryController implements Initializable {
     private void getUpdates() {
         comp.clearRequests();
 
-        loggerTA.appendText("Getting not handled requests...\n");
+        Platform.runLater(() -> loggerTA.appendText("Getting not handled requests...\n"));
         try {
             synchronized (comp) {
                 comp.addAllTasks(adapter.readNotHandledRequests());
             }
         } catch (IllegalAccessException e) {
-            loggerTA.appendText("[ERROR] : Impossible to get requests:\n" + e.getMessage() + "\n");
+            Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to get requests:\n" + e.getMessage() + "\n"));
             return;
         }
-        loggerTA.appendText("We successfully got requests\n");
-        notifier.eventNotifier(0.2);
+        Platform.runLater(() -> {
+            loggerTA.appendText("We successfully got requests\n");
+            notifier.eventNotifier(0.2);
+        });
     }
 
     private void computeAndPush(boolean update) {
         synchronized (comp) {
-            loggerTA.appendText("Computing...\n");
+            Platform.runLater(() -> loggerTA.appendText("Computing...\n"));
             comp.compute();
-            loggerTA.appendText("Computing has been successfully finished\n");
+            Platform.runLater(() -> loggerTA.appendText("Computing has been successfully finished\n"));
 
             if (update) {
-                loggerTA.appendText("Updating requests...\n");
+                Platform.runLater(() -> loggerTA.appendText("Updating requests...\n"));
                 try {
                     adapter.updateRequestsByTripId(comp.requests);
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to update requests:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to update requests:\n" + e.getMessage() + "\n"));
                     return;
                 }
-                notifier.eventNotifier(0.1);
-                loggerTA.appendText("Updating has been successfully finished\n");
-
-                loggerTA.appendText("Updating trips...\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.1);
+                    loggerTA.appendText("Updating has been successfully finished\n");
+                    loggerTA.appendText("Updating trips...\n");
+                });
                 try {
                     adapter.updateTripByTripId(comp.cars);
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to update trips:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to update trips:\n" + e.getMessage() + "\n"));
                     return;
                 }
-                notifier.eventNotifier(0.1);
-                loggerTA.appendText("Updating has been successfully finished\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.1);
+                    loggerTA.appendText("Updating has been successfully finished\n");
+                });
             } else {
-                loggerTA.appendText("Uploading requests...\n");
+                Platform.runLater(() -> loggerTA.appendText("Uploading requests...\n"));
                 try {
                     adapter.pushRequests(comp.requests);
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to upload requests:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to upload requests:\n" + e.getMessage() + "\n"));
                     return;
                 }
-                notifier.eventNotifier(0.1);
-                loggerTA.appendText("Uploading has been successfully finished\n");
-
-                loggerTA.appendText("Uploading trips...\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.1);
+                    loggerTA.appendText("Uploading has been successfully finished\n");
+                    loggerTA.appendText("Uploading trips...\n");
+                });
                 try {
                     adapter.pushTrips(comp.cars);
                 } catch (IllegalAccessException e) {
-                    loggerTA.appendText("[ERROR] : Impossible to upload trips:\n" + e.getMessage() + "\n");
+                    Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to upload trips:\n" + e.getMessage() + "\n"));
                     return;
                 }
-                notifier.eventNotifier(0.1);
-                loggerTA.appendText("Uploading has been successfully finished\n");
+                Platform.runLater(() -> {
+                    notifier.eventNotifier(0.1);
+                    loggerTA.appendText("Uploading has been successfully finished\n");
+                });
             }
         }
     }
@@ -359,68 +423,52 @@ public class PrimaryController implements Initializable {
         double orLon;
         double desLat;
         double desLon;
-        int hours;
-        int minutes;
 
         try {
             orLat = Double.parseDouble(orLatTF.getText());
-        } catch (NumberFormatException e) {
-            orLatTF.setStyle("-fx-text-box-border: red ;");
+        } catch (NumberFormatException | NullPointerException e) {
+            orLatTF.validate();
             showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Широта точки отправлени должна быть дробным числомю");
             return Optional.empty();
         }
 
         try {
             orLon = Double.parseDouble(orLonTF.getText());
-        } catch (NumberFormatException e) {
-            orLonTF.setStyle("-fx-text-box-border: red ;");
+        } catch (NumberFormatException | NullPointerException e) {
+            orLonTF.validate();
             showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Долгота точки отправлени должна быть дробным числомю");
             return Optional.empty();
         }
 
         try {
             desLat = Double.parseDouble(destLatTF.getText());
-        } catch (NumberFormatException e) {
-            destLatTF.setStyle("-fx-text-box-border: red ;");
+        } catch (NumberFormatException | NullPointerException e) {
+            destLatTF.validate();
             showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Широта точки прибытия должна быть дробным числомю");
             return Optional.empty();
         }
 
         try {
             desLon = Double.parseDouble(destLonTF.getText());
-        } catch (NumberFormatException e) {
-            destLonTF.setStyle("-fx-text-box-border: red ;");
+        } catch (NumberFormatException | NullPointerException e) {
+            destLonTF.validate();
             showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Долгота точки прибытия должна быть дробным числомю");
             return Optional.empty();
         }
 
-        try {
-            hours = Integer.parseInt(hoursTF.getText());
-            if (hours < 0 || hours > 23) {
-                hoursTF.setStyle("-fx-text-box-border: red ;");
-                showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Значение часа отправления должно лежать на отрезке [0;23]");
-                return Optional.empty();
-            }
-        } catch (NumberFormatException e) {
-            hoursTF.setStyle("-fx-text-box-border: red ;");
-            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Значение часа отправления должно быть целым числом");
+        if (dP.getValue() == null) {
+            dP.validate();
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Необходимо ввести дату публикации запроса");
             return Optional.empty();
         }
 
-        try {
-            minutes = Integer.parseInt(minutesTF.getText());
-            if (minutes < 0 || minutes > 59) {
-                minutesTF.setStyle("-fx-text-box-border: red ;");
-                showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Значение минут отправления должно лежать на отрезке [0;59]");
-                return Optional.empty();
-            }
-        } catch (NumberFormatException e) {
-            minutesTF.setStyle("-fx-text-box-border: red ;");
-            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Значение минут отправления должно быть целым числом");
+        if (tP.getValue() == null) {
+            tP.validate();
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Необходимо ввести время публикации запроса");
             return Optional.empty();
         }
 
-        LocalDateTime time = LocalDateTime.of(dP.getValue(), LocalTime.of(hours, minutes));
+        LocalDateTime time = LocalDateTime.of(dP.getValue(), tP.getValue());
         TripRequest request = new TripRequest(new Coordinate(orLat, orLon),
                 new Coordinate(desLat, desLon), TripRequest.DEFAULT_WAITING_TIME, TripRequest.DEFAULT_TRIP_COEFFICIENT,
                 time, UUID.randomUUID().toString());
@@ -434,13 +482,17 @@ public class PrimaryController implements Initializable {
         alert.showAndWait();
     }
 
-    public void btnClosePressed(ActionEvent event){
-        var stage = (Stage)((Button)event.getSource()).getScene().getWindow();
+    public void btnClosePressed(ActionEvent event) {
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
+        var stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
         stage.close();
     }
 
-    public void btnCurtailPressed(ActionEvent event){
-        Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
+    public void btnCurtailPressed(ActionEvent event) {
+        Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
         stage.setIconified(true);
     }
 }
