@@ -14,8 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class LocalDataReadWriter {
-    //
-    private static final String pathToFile ="./././././././././RideAustin_Weather.csv"; // Git не пропустил этот файл
+    private static final String pathToFile ="./././././././././RideAustin_Weather.csv";
     private static final String pathToFile2 ="./././././././././Chicago_5000.csv";
     private static final String pathToFile2Additional ="./././././././././Chicago_5000_Offset5000.csv";
 

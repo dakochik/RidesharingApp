@@ -41,7 +41,7 @@ public class PrimaryController implements Initializable {
             prBar.setProgress(0);
             getUpdates();
             computeAndPush(true);
-            prBar.setProgress(0);
+            Platform.runLater(() -> prBar.setProgress(0));
         }
     }
 

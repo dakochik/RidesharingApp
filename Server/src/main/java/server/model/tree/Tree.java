@@ -110,9 +110,6 @@ public class Tree {
             return false;
         }
         Node node = nodes.get(0);
-//        System.out.printf("%s %s ->\t%s\n", node.arrivingTime, root.arrivingTime, (node.arrivingTime.getDayOfMonth() - root.arrivingTime.getDayOfMonth()) * 24 * 60
-//                + (node.arrivingTime.getHour() - root.arrivingTime.getHour()) * 60
-//                + (node.arrivingTime.getMinute() - root.arrivingTime.getMinute()));
         var dist = GeoTools.measureDistance(root, node);
         if (isFeasible(root, node, depth + dist) && isItNotFromFuture(node, root, depth + dist)) {
             boolean firstFlag = false;
@@ -184,7 +181,7 @@ public class Tree {
 
         Node copy = new Node(fromHere.type, new ArrayList<>(),
                 fromHere.location, fromHere.arrivingTime.plusMinutes((long) (distance / TripRequest.MINUTES_TO_KM)));
-        copy.slackTime = distance;
+        copy.slackTime = newShift;
         copy.status = fromHere.status;
         copy.distanceFromRootToNode = fromHere.distanceFromRootToNode + distance;
         copy.distanceFromOriginToNode = fromHere.distanceFromOriginToNode;
@@ -256,8 +253,8 @@ public class Tree {
      * @return не рушит ли планы корня поддерева и его детей новая вершина
      */
     public static boolean isFeasible(Node root, Node newNode, double dist) {
-        if (newNode.type == NodeType.ORIGIN && (dist < newNode.timeLimit)) {
-            return true;
+        if (newNode.type == NodeType.ORIGIN && (dist > newNode.timeLimit)) {
+            return false;
         }
         for (var child : root.children) {
             if (dist - root.distanceFromRootToNode + GeoTools.measureDistance(newNode, child)

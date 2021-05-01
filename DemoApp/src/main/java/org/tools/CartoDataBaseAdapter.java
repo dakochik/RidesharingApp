@@ -368,38 +368,4 @@ public class CartoDataBaseAdapter {
             }
         }
     }
-
-    public static void main(String[] args) {
-        CartoDataBaseAdapter a = new CartoDataBaseAdapter();
-        RideSharingComputer comp = new RideSharingComputer();
-        try {
-            var res = a.readRequests();
-
-            System.out.println(comp.requests.size());
-            comp.compute();
-
-            a.clearTripsTable();
-            a.clearRequestsTable();
-
-            a.pushRequests(comp.requests);
-            a.pushTrips(comp.cars);
-
-            //System.out.println(comp.confirmedReq);
-
-//            CSVParser.carsWriter(comp);
-//            CSVParser.requestsWriter(comp);
-
-            // Вывод строкового представления деревьев решений
-//            for (var a: comp.cars) {
-//                System.out.println(a.tree.getStringRepresentation());
-//            }
-//
-//            // Пример движения одной машины и проверка результата
-//            comp.cars.get(comp.cars.size() - 4).updateLocation(comp.cars.get(comp.cars.size() - 4).tree.originalRoot.arrivingTime.plusMinutes(1));
-//            System.out.println(comp.cars.get(comp.cars.size() - 4).tree.getStringRepresentation());
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 }

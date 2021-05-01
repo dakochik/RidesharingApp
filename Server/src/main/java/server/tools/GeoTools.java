@@ -53,7 +53,7 @@ public class GeoTools {
                     * Math.cos(Math.toRadians(theta));
             dist = Math.acos(dist);
             dist = Math.toDegrees(dist);
-            dist = dist * 60 * 1.1515 * 1.609344 * APPROXIMATION_ERROR_COEFFICIENT;
+            dist = dist * 111.18957696 * APPROXIMATION_ERROR_COEFFICIENT; // 111.18957696 - длина дуги 1 градуса мередиана
 
             return dist;
         }
