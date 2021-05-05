@@ -10,7 +10,9 @@ public enum TableHeaders {
     PICKUP_CENTROID_LOCATION("pickup_centroid_location"),
     DROPOFF_CENTROID_LATITUDE("dropoff_centroid_latitude"),
     DROPOFF_CENTROID_LONGITUDE("dropoff_centroid_longitude"),
-    DROPOFF_CENTROID_LOCATION("dropoff_centroid_location");
+    DROPOFF_CENTROID_LOCATION("dropoff_centroid_location"),
+    MAX_WAITING_TIME("waiting_time"),
+    MAX_DISTANCE_COEFFICIENT("distance_coefficient");
 
 
     public final String val;

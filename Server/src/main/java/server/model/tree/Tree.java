@@ -7,6 +7,7 @@ import server.tools.GeoTools;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Tree {
 
@@ -105,7 +106,7 @@ public class Tree {
      * @param nodes новые узлы (начало и конец поездки)
      * @return возможно ли вставить узел в дерево
      */
-    private static boolean insertNode(Node root, ArrayList<Node> nodes, double depth) {
+    private static boolean insertNode(Node root, List<Node> nodes, double depth) {
         if (root.children.isEmpty()) {
             return false;
         }

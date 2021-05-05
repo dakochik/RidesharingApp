@@ -5,12 +5,13 @@ import server.model.users.TripRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class RideSharingComputer {
-    private IterNotifier notifier;
-    public final ArrayList<Car> cars;
+    private final IterNotifier notifier;
+    public final List<Car> cars;
 
-    public ArrayList<TripRequest> requests;
+    public List<TripRequest> requests;
 
     public int confirmedReq = 0;
 

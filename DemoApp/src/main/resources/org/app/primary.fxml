@@ -3,6 +3,7 @@
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
 
 <AnchorPane id="paneLikeBane" fx:id="paneLikeBane" prefHeight="662.0" prefWidth="1023.0" style="-fx-background-color: #FFF8E3; -fx-background-radius: 30;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.app.controller.PrimaryController">
    <children>
@@ -22,21 +23,27 @@
 
       <Pane layoutX="16.0" layoutY="394.0" prefHeight="253.0" prefWidth="991.0" style="-fx-background-color: #EFE0B3; -fx-background-radius: 10;">
          <children>
-            <Label layoutX="653.0" layoutY="23.0" stylesheets="@styles/textStyleSheet.css" text="Автоматически сгенерированный идентификатор поездки" />
+            <Label layoutX="674.0" layoutY="23.0" prefHeight="14.0" prefWidth="305.0" stylesheets="@styles/textStyleSheet.css" text="Автоматически сгенерированный идентификатор поездки" />
             <Label layoutX="14.0" layoutY="172.0" stylesheets="@styles/textStyleSheet.css" text="Дата и время запроса" />
             <Label layoutX="13.0" layoutY="15.0" stylesheets="@styles/textStyleSheet.css" text="Отправление" />
             <Label layoutX="227.0" layoutY="15.0" stylesheets="@styles/textStyleSheet.css" text="Прибытие" />
 
             <JFXTextField fx:id="orLatTF" labelFloat="true" layoutX="14.0" layoutY="56.0" prefHeight="25.0" prefWidth="174.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
             <JFXTextField fx:id="orLonTF" labelFloat="true" layoutX="14.0" layoutY="119.0" prefHeight="25.0" prefWidth="174.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="idTF" editable="false" layoutX="653.0" layoutY="56.0" prefHeight="25.0" prefWidth="323.0" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="destLatTF" labelFloat="true" layoutX="227.0" layoutY="56.0" prefHeight="25.0" prefWidth="181.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="destLonTF" labelFloat="true" layoutX="227.0" layoutY="119.0" prefHeight="25.0" prefWidth="181.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
+            <JFXTextField fx:id="idTF" editable="false" layoutX="671.0" layoutY="56.0" prefHeight="25.0" prefWidth="305.0" stylesheets="@styles/tfStyleSheet.css" />
+            <JFXTextField fx:id="destLatTF" labelFloat="true" layoutX="227.0" layoutY="56.0" prefHeight="25.0" prefWidth="174.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
+            <JFXTextField fx:id="destLonTF" labelFloat="true" layoutX="227.0" layoutY="119.0" prefHeight="25.0" prefWidth="174.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
+            <JFXTextField fx:id="wTime" labelFloat="true" layoutX="440.0" layoutY="56.0" prefWidth="181.0" promptText="Макс. время ожидания (минуты)" stylesheets="@styles/tfStyleSheet.css" />
+            <JFXTextField fx:id="tCoefficient" labelFloat="true" layoutX="440.0" layoutY="120.0" prefWidth="181.0" promptText="Макс. коэф-т увел-я поездки" stylesheets="@styles/tfStyleSheet.css" />
 
             <Button fx:id="btnAdd" layoutX="895.0" layoutY="117.0" mnemonicParsing="false" onAction="#btnAddPressed" stylesheets="@styles/addButtonStyleSheet.css" text="Добавить" />
 
             <JFXDatePicker fx:id="dP" layoutX="14.0" layoutY="199.0" prefHeight="28.0" prefWidth="181.0" />
             <JFXTimePicker fx:id="tP" layoutX="227.0" layoutY="199.0" prefHeight="28.0" prefWidth="181.0" />
+            <JFXRadioButton fx:id="rBtn" layoutX="467.0" layoutY="204.0" mnemonicParsing="false" text="Добавить машину">
+               <selectedColor>
+                  <Color green="0.5882353186607361" blue="0.5333333611488342" />
+               </selectedColor></JFXRadioButton>
          </children></Pane>
    </children>
 </AnchorPane>

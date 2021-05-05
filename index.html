@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guide | CARTO</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <!-- Include Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
+    <!-- Include CARTO.js -->
+    <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.2.0/carto.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            box-sizing: border-box;
+            height: 100%;
+        }
+
+        body {
+            background: #f2f6f9;
+            height: 100%;
+            font-family: "Open sans", Helvetica, Arial, sans-serif;
+        }
+
+        #container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        #map {
+            flex: 1;
+            margin: 10px;
+        }
+
+        #widgets {
+            width: 300px;
+            margin: 10px 10px 10px 0;
+        }
+
+        .widget {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .widget h1 {
+            font-size: 1.2em;
+        }
+
+        .widget h2 {
+            font-size: 1em;
+            display: inline;
+        }
+
+        .widget-formula .result {
+            font-size: 2em;
+        }
+
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="map"></div>
+    <div id="widgets">
+        <div id="tripsNumb" class="widget">
+            <h1>Maximum number of trips</h1>
+            <input type="number" width="3" id="trips_numb" name="trips_numb" min="1" value="100"
+                   onchange="prepareFiltering()">
+        </div>
+        <div id="tripsDate" class="widget">
+            <h1>Trip request time</h1>
+            <h2>
+                <h2>From:</h2>
+                <input type="time" width="3" id="trips_time_begin" name="trips_time_begin">
+                <h2>To:</h2>
+                <input type="time" width="3" id="trips_time_end" name="trips_time_end">
+                <button id="filter_by_time_button" onclick="prepareFiltering()">Show</button>
+            </h2>
+        </div>
+        <div id="chooseDataSets" class="widget">
+            <h1>Displayed data sets</h1>
+            <div style="margin-left: 5px">
+                <input type="checkbox" onchange="prepareFiltering()" id="c_b_1" checked>
+                <h2> - All requests</h2>
+            </div>
+            <div style="margin-left: 5px">
+                <input type="checkbox" onchange="prepareFiltering()" id="c_b_2">
+                <h2> - Car trips</h2>
+            </div>
+            <div style="margin-left: 5px">
+                <input type="checkbox" onchange="prepareFiltering()" id="c_b_3">
+                <h2> - User trips</h2>
+            </div>
+        </div>
+        <div id="exactTrip" class="widget">
+            <h1>Show exact trip by id</h1>
+            <input type="text" id="trip_id"/>
+            <button id="show_exact_trip" onclick="prepareFiltering()">Show</button>
+        </div>
+    </div>
+</div>
+<script src="PageScript.js"></script>
+</body>
+</html>

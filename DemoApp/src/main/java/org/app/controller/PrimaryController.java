@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import com.jfoenix.controls.JFXDatePicker;
+import com.jfoenix.controls.JFXRadioButton;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXTimePicker;
 import com.jfoenix.validation.RequiredFieldValidator;
-import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -20,6 +20,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.app.validator.DoubleLatLonValidator;
+import org.app.validator.WaitCoefficientValidator;
 import org.locationtech.jts.geom.Coordinate;
 import org.tools.CartoDataBaseAdapter;
 import server.model.users.Car;
@@ -77,9 +78,12 @@ public class PrimaryController implements Initializable {
     public JFXTextField idTF;
     public JFXTextField destLatTF;
     public JFXTextField destLonTF;
+    public JFXTextField wTime;
+    public JFXTextField tCoefficient;
 
     public JFXDatePicker dP;
     public JFXTimePicker tP;
+    public JFXRadioButton rBtn;
 
     public PrimaryController() {
         comp = new RideSharingComputer(notifier);
@@ -96,10 +100,14 @@ public class PrimaryController implements Initializable {
     }
 
     private void initTFListeners() {
+        wTime.setText("20");
+        tCoefficient.setText("1.8");
         RequiredFieldValidator validator = new RequiredFieldValidator();
         validator.setMessage("Введите значение");
         DoubleLatLonValidator lonValidator = new DoubleLatLonValidator(180);
         DoubleLatLonValidator latValidator = new DoubleLatLonValidator(90);
+        WaitCoefficientValidator waitingTimeV = new WaitCoefficientValidator(0);
+        WaitCoefficientValidator tripCoefficient = new WaitCoefficientValidator(1);
 
         orLonTF.getValidators().addAll(validator, lonValidator);
         orLatTF.getValidators().addAll(validator, latValidator);
@@ -107,6 +115,8 @@ public class PrimaryController implements Initializable {
         destLatTF.getValidators().addAll(validator, latValidator);
         dP.getValidators().add(validator);
         tP.getValidators().add(validator);
+        wTime.getValidators().add(waitingTimeV);
+        tCoefficient.getValidators().add(tripCoefficient);
 
         orLonTF.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
             if (!t1) {
@@ -138,6 +148,16 @@ public class PrimaryController implements Initializable {
                 tP.validate();
             }
         });
+        wTime.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                wTime.validate();
+            }
+        });
+        tCoefficient.focusedProperty().addListener((observableValue, aBoolean, t1) -> {
+            if (!t1) {
+                tCoefficient.validate();
+            }
+        });
     }
 
     public void btnStartPressed(ActionEvent event) {
@@ -159,7 +179,7 @@ public class PrimaryController implements Initializable {
     }
 
     public void btnPausePressed(ActionEvent event) {
-        loggerTA.appendText("\nComputing has been paused\n");
+        loggerTA.appendText("\nComputing have been paused\n");
         prBar.setProgress(0);
         btnCont.setDisable(false);
         btnPause.setDisable(true);
@@ -210,28 +230,55 @@ public class PrimaryController implements Initializable {
 
         if (newRequest.isPresent()) {
             idTF.setText(newRequest.get().tripId);
-            List<TripRequest> reqL = new ArrayList<>() {{
-                add(newRequest.get());
-            }};
 
-            Task<Void> task = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    synchronized (comp) {
-                        comp.addAllTasks(reqL);
+            if(rBtn.isSelected()){
+                List<Car> carL = new ArrayList<>() {{
+                    add(new Car(3, newRequest.get()));
+                }};
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        synchronized (comp) {
+                            comp.addAllCars(carL);
+                        }
+                        Platform.runLater(() -> loggerTA.appendText("Pushing trip...\n"));
+                        try {
+                            adapter.pushTrips(carL);
+                            Platform.runLater(() -> loggerTA.appendText("Trip was successfully added\n"));
+                        } catch (IllegalAccessException e) {
+                            Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to push new trip:\n" + e.getMessage() + "\n"));
+                        }
+                        return null;
                     }
-                    Platform.runLater(() -> loggerTA.appendText("Pushing request...\n"));
-                    try {
-                        adapter.pushRequests(reqL);
-                        Platform.runLater(() -> loggerTA.appendText("Request was successfully added\n"));
-                    } catch (IllegalAccessException e) {
-                        Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to push new request:\n" + e.getMessage() + "\n"));
-                    }
-                    return null;
-                }
-            };
+                };
 
-            new Thread(task).start();
+                new Thread(task).start();
+            }
+            else {
+
+                List<TripRequest> reqL = new ArrayList<>() {{
+                    add(newRequest.get());
+                }};
+
+                Task<Void> task = new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        synchronized (comp) {
+                            comp.addAllTasks(reqL);
+                        }
+                        Platform.runLater(() -> loggerTA.appendText("Pushing request...\n"));
+                        try {
+                            adapter.pushRequests(reqL);
+                            Platform.runLater(() -> loggerTA.appendText("Request was successfully added\n"));
+                        } catch (IllegalAccessException e) {
+                            Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to push new request:\n" + e.getMessage() + "\n"));
+                        }
+                        return null;
+                    }
+                };
+
+                new Thread(task).start();
+            }
         }
     }
 
@@ -366,7 +413,7 @@ public class PrimaryController implements Initializable {
         synchronized (comp) {
             Platform.runLater(() -> loggerTA.appendText("Computing...\n"));
             comp.compute();
-            Platform.runLater(() -> loggerTA.appendText("Computing has been successfully finished\n"));
+            Platform.runLater(() -> loggerTA.appendText("Computing have been successfully finished\n"));
 
             if (update) {
                 Platform.runLater(() -> loggerTA.appendText("Updating requests...\n"));
@@ -423,12 +470,14 @@ public class PrimaryController implements Initializable {
         double orLon;
         double desLat;
         double desLon;
+        double waitingT;
+        double tCoeff;
 
         try {
             orLat = Double.parseDouble(orLatTF.getText());
         } catch (NumberFormatException | NullPointerException e) {
             orLatTF.validate();
-            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Широта точки отправлени должна быть дробным числомю");
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Широта точки отправлени должна быть дробным числом");
             return Optional.empty();
         }
 
@@ -436,7 +485,7 @@ public class PrimaryController implements Initializable {
             orLon = Double.parseDouble(orLonTF.getText());
         } catch (NumberFormatException | NullPointerException e) {
             orLonTF.validate();
-            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Долгота точки отправлени должна быть дробным числомю");
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Долгота точки отправлени должна быть дробным числом");
             return Optional.empty();
         }
 
@@ -444,7 +493,7 @@ public class PrimaryController implements Initializable {
             desLat = Double.parseDouble(destLatTF.getText());
         } catch (NumberFormatException | NullPointerException e) {
             destLatTF.validate();
-            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Широта точки прибытия должна быть дробным числомю");
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Широта точки прибытия должна быть дробным числом");
             return Optional.empty();
         }
 
@@ -452,7 +501,7 @@ public class PrimaryController implements Initializable {
             desLon = Double.parseDouble(destLonTF.getText());
         } catch (NumberFormatException | NullPointerException e) {
             destLonTF.validate();
-            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Долгота точки прибытия должна быть дробным числомю");
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Долгота точки прибытия должна быть дробным числом");
             return Optional.empty();
         }
 
@@ -468,9 +517,37 @@ public class PrimaryController implements Initializable {
             return Optional.empty();
         }
 
+        try {
+            waitingT = Double.parseDouble(wTime.getText());
+        } catch (NumberFormatException | NullPointerException e) {
+            wTime.validate();
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Максимальное время ожидания должно быть дробным числом");
+            return Optional.empty();
+        }
+
+        try {
+            tCoeff = Double.parseDouble(tCoefficient.getText());
+        } catch (NumberFormatException | NullPointerException e) {
+            tCoefficient.validate();
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Максимальный коэффициент увеличиения поездки должен быть дробным числом");
+            return Optional.empty();
+        }
+
+        if (waitingT < 0){
+            wTime.validate();
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Максимальное время ожидания не должно быть отрицательным");
+            return Optional.empty();
+        }
+
+        if (tCoeff < 1.0){
+            wTime.validate();
+            showAlert(Alert.AlertType.WARNING, "Некорректные входные данные", "Максимальный коэффициент увеличиения поездки не должен быть меньше 1");
+            return Optional.empty();
+        }
+
         LocalDateTime time = LocalDateTime.of(dP.getValue(), tP.getValue());
         TripRequest request = new TripRequest(new Coordinate(orLat, orLon),
-                new Coordinate(desLat, desLon), TripRequest.DEFAULT_WAITING_TIME, TripRequest.DEFAULT_TRIP_COEFFICIENT,
+                new Coordinate(desLat, desLon), waitingT, tCoeff-1,
                 time, UUID.randomUUID().toString());
         return Optional.of(request);
     }

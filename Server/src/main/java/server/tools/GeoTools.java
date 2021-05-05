@@ -74,7 +74,7 @@ public class GeoTools {
      * @param lat долгота точки
      * @return
      */
-    public static double getLongitudeShift(double length, double lat){
+        public static double getLongitudeShift(double length, double lat){
         return (length/111.111)/Math.cos(lat);
     }
 

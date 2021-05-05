@@ -6,8 +6,8 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.io.WKBWriter;
 import server.TableHeaders;
+import server.model.users.Car;
 import server.model.users.TripRequest;
-import server.service.RideSharingComputer;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.DataFormatException;
 
 public class CSVParser {
     /**
@@ -25,7 +24,7 @@ public class CSVParser {
      *
      * @throws IOException если возникли проблемы с чтением/записью файлов
      */
-    public static void fetchMainData() throws IOException {
+    public static void fetchMainData(String inputPath, String outputPath) throws IOException {
         String fields[] = {TableHeaders.TRIP_ID.val, TableHeaders.TRIP_START_TIMESTAMP.val,
                 TableHeaders.PICKUP_CENTROID_LATITUDE.val, TableHeaders.PICKUP_CENTROID_LONGITUDE.val,
                 TableHeaders.PICKUP_CENTROID_LOCATION.val, TableHeaders.DROPOFF_CENTROID_LATITUDE.val,
@@ -34,7 +33,7 @@ public class CSVParser {
         int columnsSize;
         StringBuilder builder = new StringBuilder();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("Chicago_5000.csv"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputPath))) {
             var header = Arrays.stream(reader.readLine().replace("\"", "").split(",")).collect(Collectors.toList());
             columnsSize = header.size();
             poss[0] = 0;
@@ -81,13 +80,13 @@ public class CSVParser {
             }
         }
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Chicago_5000_filtered.csv"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
             writer.write(builder.toString());
             writer.flush();
         }
     }
 
-    public static void fetchMainDataAndSetExactDate() throws IOException {
+    public static void fetchMainDataAndSetExactDate(String inputPath, String outputPath) throws IOException {
         String fields[] = {TableHeaders.TRIP_ID.val, TableHeaders.TRIP_START_TIMESTAMP.val,
                 TableHeaders.PICKUP_CENTROID_LATITUDE.val, TableHeaders.PICKUP_CENTROID_LONGITUDE.val,
                 TableHeaders.PICKUP_CENTROID_LOCATION.val, TableHeaders.DROPOFF_CENTROID_LATITUDE.val,
@@ -96,7 +95,7 @@ public class CSVParser {
         int columnsSize;
         StringBuilder builder = new StringBuilder();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("Chicago_1000_Offset5000.csv"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputPath))) {
             var header = Arrays.stream(reader.readLine().replace("\"", "").split(",")).collect(Collectors.toList());
             columnsSize = header.size();
             poss[0] = 0;
@@ -144,7 +143,7 @@ public class CSVParser {
             }
         }
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Chicago_1000_Offset5000_filtered.csv"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
             writer.write(builder.toString());
             writer.flush();
         }
@@ -164,19 +163,19 @@ public class CSVParser {
                         TripRequest.DEFAULT_TRIP_COEFFICIENT, LocalDateTime.parse(arr[1]), arr[0]));
                 newLine = reader.readLine();
             }
-        }catch (NumberFormatException| DateTimeParseException e){
+        }catch (NumberFormatException| DateTimeParseException| IndexOutOfBoundsException e){
             throw new IOException("Incorrect input data:\n"+e.getMessage());
         }
 
         return result;
     }
 
-    public static void carsWriter(RideSharingComputer computer) throws IOException {
+    public static void carsWriter(List<Car> cars, String path) throws IOException {
         String fields[] = {TableHeaders.TRIP_ID.val, TableHeaders.GEOM.val, TableHeaders.TRIP_START_TIMESTAMP.val,
                 TableHeaders.PICKUP_CENTROID_LATITUDE.val, TableHeaders.PICKUP_CENTROID_LONGITUDE.val,
                 TableHeaders.PICKUP_CENTROID_LOCATION.val, TableHeaders.DROPOFF_CENTROID_LATITUDE.val,
                 TableHeaders.DROPOFF_CENTROID_LONGITUDE.val, TableHeaders.DROPOFF_CENTROID_LOCATION.val};
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Chicago_5000_cars.csv"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             StringBuilder builder = new StringBuilder();
 
             builder.append(fields[0]);
@@ -186,7 +185,7 @@ public class CSVParser {
             writer.write(builder.append("\n").toString());
 
             var wkbWriter = new WKBWriter(2);
-            for (var car : computer.cars) {
+            for (var car : cars) {
                 builder.delete(0, builder.length());
 
                 builder.append(car.tripRequest.tripId).append(",");
@@ -217,13 +216,13 @@ public class CSVParser {
         }
     }
 
-    public static void requestsWriter(RideSharingComputer computer) throws IOException {
+    public static void requestsWriter(List<TripRequest> requests, String path) throws IOException {
         String fields[] = {TableHeaders.REQUEST_ID.val,TableHeaders.TRIP_ID.val, TableHeaders.GEOM.val,
                 TableHeaders.TRIP_START_TIMESTAMP.val, TableHeaders.PICKUP_CENTROID_LATITUDE.val,
                 TableHeaders.PICKUP_CENTROID_LONGITUDE.val, TableHeaders.PICKUP_CENTROID_LOCATION.val,
                 TableHeaders.DROPOFF_CENTROID_LATITUDE.val, TableHeaders.DROPOFF_CENTROID_LONGITUDE.val,
                 TableHeaders.DROPOFF_CENTROID_LOCATION.val};
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("Chicago_5000_requests.csv"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             StringBuilder builder = new StringBuilder();
 
             builder.append(fields[0]);
@@ -233,7 +232,7 @@ public class CSVParser {
             writer.write(builder.append("\n").toString());
 
             var wkbWriter = new WKBWriter(2);
-            for (var request : computer.requests) {
+            for (var request : requests) {
                 builder.delete(0, builder.length());
 
                 builder.append(request.tripId).append(",");

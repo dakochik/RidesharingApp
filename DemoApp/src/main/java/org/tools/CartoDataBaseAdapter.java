@@ -45,7 +45,7 @@ public class CartoDataBaseAdapter {
         }
     }
 
-    public List<TripRequest> readRequests() throws IllegalAccessException{
+    public List<TripRequest> readRequests() throws IllegalAccessException {
         List<TripRequest> result = new ArrayList<>();
 
         String data = String.format("{\"q\":\"%s\"}", String.format("SELECT * FROM %s ",
@@ -57,8 +57,8 @@ public class CartoDataBaseAdapter {
         Document doc = Jsoup.parseBodyFragment(curl.exec(htmlResolver, null).outerHtml());
         System.out.printf("Request code: %s%n\n", curl.getHttpCode()); // Change to logging
 
-        if(curl.getHttpCode() != 200){
-            throw new IllegalAccessException("Impossible to access remote data base\nRequest code: "+curl.getHttpCode());
+        if (curl.getHttpCode() != 200) {
+            throw new IllegalAccessException("Impossible to access remote data base\nRequest code: " + curl.getHttpCode());
         }
 
         JSONObject obj = new JSONObject(doc.body().text());
@@ -82,7 +82,7 @@ public class CartoDataBaseAdapter {
         return result;
     }
 
-    public List<TripRequest> readNotHandledRequests() throws IllegalAccessException{
+    public List<TripRequest> readNotHandledRequests() throws IllegalAccessException {
         List<TripRequest> result = new ArrayList<>();
 
         String data = String.format("{\"q\":\"%s\"}", String.format("SELECT * FROM %s WHERE (%s is null or %s = '')",
@@ -94,7 +94,7 @@ public class CartoDataBaseAdapter {
         Document doc = Jsoup.parseBodyFragment(curl.exec(htmlResolver, null).outerHtml());
         System.out.printf("Request code: %s%n\n", curl.getHttpCode()); // Change to logging
 
-        if(curl.getHttpCode() != 200){
+        if (curl.getHttpCode() != 200) {
             throw new IllegalAccessException("Impossible to access remote data base");
         }
 
@@ -110,10 +110,12 @@ public class CartoDataBaseAdapter {
             String originLong = requestObj.get(TableHeaders.PICKUP_CENTROID_LONGITUDE.val).toString();
             String destLat = requestObj.get(TableHeaders.DROPOFF_CENTROID_LATITUDE.val).toString();
             String destLong = requestObj.get(TableHeaders.DROPOFF_CENTROID_LONGITUDE.val).toString();
+            double waiting = Double.parseDouble(requestObj.get(TableHeaders.MAX_WAITING_TIME.val).toString());
+            double coefficient = Double.parseDouble(requestObj.get(TableHeaders.MAX_DISTANCE_COEFFICIENT.val).toString());
 
             result.add(new TripRequest(new Coordinate(Double.parseDouble(originLat), Double.parseDouble(originLong)),
                     new Coordinate(Double.parseDouble(destLat), Double.parseDouble(destLong)),
-                    TripRequest.DEFAULT_WAITING_TIME, TripRequest.DEFAULT_TRIP_COEFFICIENT,
+                    waiting, coefficient,
                     LocalDateTime.parse(time, format), reqId));
         }
 
@@ -163,13 +165,13 @@ public class CartoDataBaseAdapter {
             System.out.printf("Update bucket up to %s finished with code: %s%n\n",
                     i, curl.getHttpCode());  // Change to logging
 
-            if(curl.getHttpCode() != 200){
-                throw new IllegalAccessException("Impossible to access remote data base and update requests\nRequest code: "+curl.getHttpCode());
+            if (curl.getHttpCode() != 200) {
+                throw new IllegalAccessException("Impossible to access remote data base and update requests\nRequest code: " + curl.getHttpCode());
             }
         }
     }
 
-    public void updateTripByTripId(List<Car> cars) throws IllegalAccessException{
+    public void updateTripByTripId(List<Car> cars) throws IllegalAccessException {
         StringBuilder dataFilterValues;
         StringBuilder dataRules;
 
@@ -211,13 +213,13 @@ public class CartoDataBaseAdapter {
             System.out.printf("Update bucket up to %s finished with code: %s%n\n",
                     i, curl.getHttpCode());  // Change to logging
 
-            if(curl.getHttpCode() != 200){
-                throw new IllegalAccessException("Impossible to access remote data base and update trips\nRequest code: "+curl.getHttpCode());
+            if (curl.getHttpCode() != 200) {
+                throw new IllegalAccessException("Impossible to access remote data base and update trips\nRequest code: " + curl.getHttpCode());
             }
         }
     }
 
-    public void clearRequestsTable() throws IllegalAccessException{
+    public void clearRequestsTable() throws IllegalAccessException {
         String data = String.format("{\"q\":\"%s\"}", String.format("TRUNCATE TABLE %s ",
                 RequestConstants.UNHANDLED_REQUESTS_TABLE_NAME.val));
         CUrl curl = new CUrl(String.format("%s%s", RequestConstants.ADDRESS.val, RequestConstants.API_KEY.val));
@@ -227,12 +229,12 @@ public class CartoDataBaseAdapter {
         Document doc = Jsoup.parseBodyFragment(curl.exec(htmlResolver, null).outerHtml());
         System.out.printf("Request code: %s%n\n", curl.getHttpCode()); // Change to logging
 
-        if(curl.getHttpCode() != 200){
-            throw new IllegalAccessException("Impossible to access remote data base and clear requests table\nRequest code: "+curl.getHttpCode());
+        if (curl.getHttpCode() != 200) {
+            throw new IllegalAccessException("Impossible to access remote data base and clear requests table\nRequest code: " + curl.getHttpCode());
         }
     }
 
-    public void clearTripsTable() throws IllegalAccessException{
+    public void clearTripsTable() throws IllegalAccessException {
         String data = String.format("{\"q\":\"%s\"}", String.format("TRUNCATE TABLE %s ",
                 RequestConstants.TRIPS_TABLE_NAME.val));
         CUrl curl = new CUrl(String.format("%s%s", RequestConstants.ADDRESS.val, RequestConstants.API_KEY.val));
@@ -242,20 +244,21 @@ public class CartoDataBaseAdapter {
         Document doc = Jsoup.parseBodyFragment(curl.exec(htmlResolver, null).outerHtml());
         System.out.printf("Request code: %s%n\n", curl.getHttpCode()); // Change to logging
 
-        if(curl.getHttpCode() != 200){
-            throw new IllegalAccessException("Impossible to access remote data base and clear trips table\nRequest code: "+curl.getHttpCode());
+        if (curl.getHttpCode() != 200) {
+            throw new IllegalAccessException("Impossible to access remote data base and clear trips table\nRequest code: " + curl.getHttpCode());
         }
     }
 
-    public void pushRequests(List<TripRequest> trips) throws IllegalAccessException{
+    public void pushRequests(List<TripRequest> trips) throws IllegalAccessException {
         StringBuilder dataRules;
 
-        String columns = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+        String columns = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
                 TableHeaders.GEOM.val, TableHeaders.REQUEST_ID.val, TableHeaders.TRIP_ID.val,
                 TableHeaders.TRIP_START_TIMESTAMP.val, TableHeaders.PICKUP_CENTROID_LATITUDE.val,
                 TableHeaders.PICKUP_CENTROID_LONGITUDE.val, TableHeaders.PICKUP_CENTROID_LOCATION.val,
                 TableHeaders.DROPOFF_CENTROID_LATITUDE.val, TableHeaders.DROPOFF_CENTROID_LONGITUDE.val,
-                TableHeaders.DROPOFF_CENTROID_LOCATION.val);
+                TableHeaders.DROPOFF_CENTROID_LOCATION.val, TableHeaders.MAX_WAITING_TIME.val,
+                TableHeaders.MAX_DISTANCE_COEFFICIENT.val);
 
         for (int i = 0; i < trips.size(); ++i) {
             dataRules = new StringBuilder();
@@ -267,10 +270,12 @@ public class CartoDataBaseAdapter {
             dataRules.append("('").append(geoRepresentation).append("','").append(trip.tripId).append("','")
                     .append(trip.carId.orElse("")).append("','").append(trip.dateOfRequest).append("',")
                     .append(trip.origin.x).append(",").append(trip.origin.y).append(",'")
-                    .append(String.format("POINT (%s %s)",trip.origin.y, trip.origin.x))
+                    .append(String.format("POINT (%s %s)", trip.origin.y, trip.origin.x))
                     .append("',").append(trip.destination.x).append(",")
                     .append(trip.destination.y).append(",'")
-                    .append(String.format("POINT (%s %s)",trip.destination.y, trip.destination.x)).append("')");
+                    .append(String.format("POINT (%s %s)", trip.destination.y, trip.destination.x)).append("',")
+                    .append(trip.maxWaitingMeasure / TripRequest.MINUTES_TO_KM).append(",")
+                    .append(trip.distanceCoefficient).append(")");
             ++counter;
             ++i;
 
@@ -280,10 +285,12 @@ public class CartoDataBaseAdapter {
                 dataRules.append(",('").append(geoRepresentation).append("','").append(trip.tripId).append("','")
                         .append(trip.carId.orElse("")).append("','").append(trip.dateOfRequest).append("',")
                         .append(trip.origin.x).append(",").append(trip.origin.y).append(",'")
-                        .append(String.format("POINT (%s %s)",trip.origin.y, trip.origin.x))
+                        .append(String.format("POINT (%s %s)", trip.origin.y, trip.origin.x))
                         .append("',").append(trip.destination.x).append(",")
                         .append(trip.destination.y).append(",'")
-                        .append(String.format("POINT (%s %s)",trip.destination.y, trip.destination.x)).append("')");
+                        .append(String.format("POINT (%s %s)", trip.destination.y, trip.destination.x)).append("',")
+                        .append(trip.maxWaitingMeasure / TripRequest.MINUTES_TO_KM).append(",")
+                        .append(trip.distanceCoefficient).append(")");
                 ++counter;
                 ++i;
             }
@@ -301,20 +308,21 @@ public class CartoDataBaseAdapter {
             System.out.printf("Pushed bucket up to %s of requests finished with code: %s%n\n",
                     i, curl.getHttpCode());  // Change to logging
 
-            if(curl.getHttpCode() != 200){
-                throw new IllegalAccessException("Impossible to access remote data base and push requests\nRequest code: "+curl.getHttpCode());
+            if (curl.getHttpCode() != 200) {
+                throw new IllegalAccessException("Impossible to access remote data base and push requests\nRequest code: " + curl.getHttpCode());
             }
         }
     }
 
-    public void pushTrips(List<Car> cars) throws IllegalAccessException{
+    public void pushTrips(List<Car> cars) throws IllegalAccessException {
         StringBuilder dataRules;
 
-        String columns = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s",
+        String columns = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
                 TableHeaders.GEOM.val, TableHeaders.TRIP_ID.val, TableHeaders.TRIP_START_TIMESTAMP.val,
                 TableHeaders.PICKUP_CENTROID_LATITUDE.val, TableHeaders.PICKUP_CENTROID_LONGITUDE.val,
                 TableHeaders.PICKUP_CENTROID_LOCATION.val, TableHeaders.DROPOFF_CENTROID_LATITUDE.val,
-                TableHeaders.DROPOFF_CENTROID_LONGITUDE.val, TableHeaders.DROPOFF_CENTROID_LOCATION.val);
+                TableHeaders.DROPOFF_CENTROID_LONGITUDE.val, TableHeaders.DROPOFF_CENTROID_LOCATION.val,
+                TableHeaders.MAX_WAITING_TIME.val, TableHeaders.MAX_DISTANCE_COEFFICIENT.val);
 
         for (int i = 0; i < cars.size(); ++i) {
             dataRules = new StringBuilder();
@@ -325,12 +333,14 @@ public class CartoDataBaseAdapter {
             dataRules.append("('").append(geoRepresentation).append("','").append(trip.tripRequest.tripId).append("','")
                     .append(trip.tripRequest.dateOfRequest).append("',").append(trip.tripRequest.origin.x).append(",")
                     .append(trip.tripRequest.origin.y).append(",'")
-                    .append(String.format("POINT (%s %s)",trip.tripRequest.origin.y, trip.tripRequest.origin.x))
+                    .append(String.format("POINT (%s %s)", trip.tripRequest.origin.y, trip.tripRequest.origin.x))
                     .append("',")
                     .append(trip.tripRequest.destination.x).append(",").append(trip.tripRequest.destination.y)
                     .append(",'")
-                    .append(String.format("POINT (%s %s)",trip.tripRequest.destination.y, trip.tripRequest.destination.x))
-                    .append("')");
+                    .append(String.format("POINT (%s %s)", trip.tripRequest.destination.y, trip.tripRequest.destination.x))
+                    .append("',")
+                    .append(trip.tripRequest.maxWaitingMeasure / TripRequest.MINUTES_TO_KM).append(",")
+                    .append(trip.tripRequest.distanceCoefficient).append(")");
             ++counter;
             ++i;
 
@@ -340,12 +350,14 @@ public class CartoDataBaseAdapter {
                 dataRules.append(",('").append(geoRepresentation).append("','").append(trip.tripRequest.tripId).append("','")
                         .append(trip.tripRequest.dateOfRequest).append("',").append(trip.tripRequest.origin.x).append(",")
                         .append(trip.tripRequest.origin.y).append(",'")
-                        .append(String.format("POINT (%s %s)",trip.tripRequest.origin.y, trip.tripRequest.origin.x))
+                        .append(String.format("POINT (%s %s)", trip.tripRequest.origin.y, trip.tripRequest.origin.x))
                         .append("',")
                         .append(trip.tripRequest.destination.x).append(",").append(trip.tripRequest.destination.y)
                         .append(",'")
-                        .append(String.format("POINT (%s %s)",trip.tripRequest.destination.y, trip.tripRequest.destination.x))
-                        .append("')");
+                        .append(String.format("POINT (%s %s)", trip.tripRequest.destination.y, trip.tripRequest.destination.x))
+                        .append("',")
+                        .append(trip.tripRequest.maxWaitingMeasure / TripRequest.MINUTES_TO_KM).append(",")
+                        .append(trip.tripRequest.distanceCoefficient).append(")");
                 ++counter;
                 ++i;
             }
@@ -363,8 +375,8 @@ public class CartoDataBaseAdapter {
             System.out.printf("Pushed bucket up to %s of cars finished with code: %s%n\n",
                     i, curl.getHttpCode());  // Change to logging
 
-            if(curl.getHttpCode() != 200){
-                throw new IllegalAccessException("Impossible to access remote data base and push trips\nRequest code: "+curl.getHttpCode());
+            if (curl.getHttpCode() != 200) {
+                throw new IllegalAccessException("Impossible to access remote data base and push trips\nRequest code: " + curl.getHttpCode());
             }
         }
     }

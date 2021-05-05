@@ -8,6 +8,7 @@ import server.service.RideSharingComputer;
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RequestsHandler {
     /**
@@ -21,9 +22,9 @@ public class RequestsHandler {
      * @param r     радиус географической локации
      * @return все машины и запросы, подходящие под описанные критерии
      */
-    public static AbstractMap.SimpleEntry<ArrayList<Car>, ArrayList<TripRequest>>
+    public static AbstractMap.SimpleEntry<List<Car>, List<TripRequest>>
     getTripsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Coordinate loc, double r) {
-        AbstractMap.SimpleEntry<ArrayList<Car>, ArrayList<TripRequest>> res
+        AbstractMap.SimpleEntry<List<Car>, List<TripRequest>> res
                 = new AbstractMap.SimpleEntry<>(new ArrayList<>(), new ArrayList<>());
 
         for (int i = 0; i < comp.cars.size(); ++i) {
@@ -59,9 +60,9 @@ public class RequestsHandler {
      * @param height высота прямоугольника в км
      * @return список всех подходящих машин
      */
-    public static ArrayList<Car>
+    public static List<Car>
     getCarsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Coordinate loc, double width, double height) {
-        ArrayList<Car> res = new ArrayList<>();
+        List<Car> res = new ArrayList<>();
 
         for (int i = 0; i < comp.cars.size(); ++i) {
             var car = comp.cars.get(i);
@@ -90,9 +91,9 @@ public class RequestsHandler {
      * @param height высота прямоугольника в км
      * @return список всех подходящих запросов
      */
-    public static ArrayList<TripRequest>
+    public static List<TripRequest>
     getRequestsByRegion(RideSharingComputer comp, LocalDateTime t, Long windS, Coordinate loc, double width, double height) {
-        ArrayList<TripRequest> res = new ArrayList<>();
+        List<TripRequest> res = new ArrayList<>();
 
         for (int i = 0; i < comp.requests.size(); ++i) {
             var req = comp.requests.get(i);

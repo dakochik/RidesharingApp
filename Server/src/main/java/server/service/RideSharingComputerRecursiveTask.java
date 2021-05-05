@@ -13,8 +13,8 @@ import static java.util.stream.Collectors.toList;
 
 public class RideSharingComputerRecursiveTask extends RecursiveTask<Optional<Car>> {
 
-    private List<Car> cars;
-    private TripRequest request;
+    private final List<Car> cars;
+    private final TripRequest request;
 
     private static final int THRESHOLD = 20;
 
@@ -59,8 +59,8 @@ public class RideSharingComputerRecursiveTask extends RecursiveTask<Optional<Car
      *
      * @return список новых подзадач.
      */
-    private ArrayList<RideSharingComputerRecursiveTask> createSubtasks() {
-        ArrayList<RideSharingComputerRecursiveTask> dividedTasks = new ArrayList<>();
+    private List<RideSharingComputerRecursiveTask> createSubtasks() {
+        List<RideSharingComputerRecursiveTask> dividedTasks = new ArrayList<>();
         dividedTasks.add(new RideSharingComputerRecursiveTask(cars.subList(0, cars.size() / 2), request));
         dividedTasks.add(new RideSharingComputerRecursiveTask(cars.subList(cars.size() / 2, cars.size()), request));
         return dividedTasks;

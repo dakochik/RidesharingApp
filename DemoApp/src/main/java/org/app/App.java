@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -13,7 +14,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * JavaFX App
@@ -60,10 +60,15 @@ public class App extends Application {
     }
 
     public void openBrowser(){
-        System.out.println(App.class.getResource("web/index.html").getPath());
-        URL url = App.class.getResource("web/index.html");
-        System.out.println(url.toExternalForm());
-        getHostServices().showDocument(url.toExternalForm());
+        try {
+            getHostServices().showDocument("index.html");
+        }
+        catch (Exception e){
+            var alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setHeaderText("Ошибка отображения страницы");
+            alert.setContentText("Невозможно открыть и отобразить HTML страницу");
+            alert.showAndWait();
+        }
     }
 }
 

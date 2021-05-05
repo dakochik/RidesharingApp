@@ -12,7 +12,10 @@ module org.example {
     requires com.jfoenix;
 
     opens org.app to javafx.fxml;
+    opens org.app.controller to javafx.fxml;
+    opens org to javafx.fxml;
+
     exports org.app;
     exports org.app.controller;
-    opens org.app.controller to javafx.fxml;
+    exports org;
 }
