@@ -11,14 +11,21 @@ import com.jfoenix.controls.JFXRadioButton;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXTimePicker;
 import com.jfoenix.validation.RequiredFieldValidator;
+import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Polyline;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.app.validator.DoubleLatLonValidator;
 import org.app.validator.WaitCoefficientValidator;
 import org.locationtech.jts.geom.Coordinate;
@@ -73,6 +80,23 @@ public class PrimaryController implements Initializable {
 
     public TextArea loggerTA;
 
+    public Ellipse sUC;
+    public Ellipse middleC;
+    public Ellipse rightBC;
+    public Ellipse rightUC;
+    public Ellipse leftBC;
+    public Ellipse leftMC;
+    public Ellipse leftUC;
+
+    PathTransition trMC;
+    PathTransition trSC;
+    PathTransition trRBC;
+    PathTransition trRUC;
+    PathTransition trLBC;
+    PathTransition trLMC;
+    PathTransition trLUC;
+
+
     public JFXTextField orLatTF;
     public JFXTextField orLonTF;
     public JFXTextField idTF;
@@ -94,9 +118,73 @@ public class PrimaryController implements Initializable {
         initTFListeners();
         adapter = new CartoDataBaseAdapter();
 
+        initPath();
+
+        trRBC.play();
+        rightBC.setFill(Paint.valueOf("#FFE599"));
+
         btnPause.setDisable(true);
 
         btnCont.setDisable(true);
+    }
+
+    private void initPath(){
+        Polyline mPl = new Polyline();
+        mPl.getPoints().addAll(-60.0, 0.0, 60.0, 0.0, -60.0, 0.0);
+        Polyline sPl = new Polyline();
+        sPl.getPoints().addAll(-15.0, 0.0, 15.0, 0.0, -15.0, 0.0);
+        Polyline lB = new Polyline();
+        lB.getPoints().addAll(-20.0,20.0, 30.0, -30.0, -20.0, 20.0);
+        Polyline lM = new Polyline();
+        lM.getPoints().addAll(-15.0, 0.0, 10.0, 0.0, -15.0, 0.0);
+        Polyline lU = new Polyline();
+        lU.getPoints().addAll(-20.0, -20.0, 30.0, 30.0, -20.0, -20.0);
+        Polyline rB = new Polyline();
+        rB.getPoints().addAll(-15.0, -15.0, 15.0, 15.0, -15.0, -15.0);
+        Polyline rU = new Polyline();
+        rU.getPoints().addAll(-15.0, 15.0, 10.0, -15.0, -15.0, 15.0);
+
+        trMC = new PathTransition();
+        trMC.setNode(middleC);
+        trMC.setDuration(Duration.seconds(0.5));
+        trMC.setPath(mPl);
+        trMC.setCycleCount(PathTransition.INDEFINITE);
+
+        trSC = new PathTransition();
+        trSC.setNode(sUC);
+        trSC.setDuration(Duration.seconds(0.4));
+        trSC.setPath(sPl);
+        trSC.setCycleCount(PathTransition.INDEFINITE);
+
+        trLBC = new PathTransition();
+        trLBC.setNode(leftBC);
+        trLBC.setDuration(Duration.seconds(0.6));
+        trLBC.setPath(lB);
+        trLBC.setCycleCount(PathTransition.INDEFINITE);
+
+        trLMC = new PathTransition();
+        trLMC.setNode(leftMC);
+        trLMC.setDuration(Duration.seconds(0.4));
+        trLMC.setPath(lM);
+        trLMC.setCycleCount(PathTransition.INDEFINITE);
+
+        trLUC = new PathTransition();
+        trLUC.setNode(leftUC);
+        trLUC.setDuration(Duration.seconds(0.6));
+        trLUC.setPath(lU);
+        trLUC.setCycleCount(PathTransition.INDEFINITE);
+
+        trRBC = new PathTransition();
+        trRBC.setNode(rightBC);
+        trRBC.setDuration(Duration.seconds(0.5));
+        trRBC.setPath(rB);
+        trRBC.setCycleCount(PathTransition.INDEFINITE);
+
+        trRUC = new PathTransition();
+        trRUC.setNode(rightUC);
+        trRUC.setDuration(Duration.seconds(0.5));
+        trRUC.setPath(rU);
+        trRUC.setCycleCount(PathTransition.INDEFINITE);
     }
 
     private void initTFListeners() {
@@ -168,8 +256,10 @@ public class PrimaryController implements Initializable {
         btnCont.setDisable(true);
         btnPause.setDisable(false);
         Task<Void> taskF = clearTablesAndDownloadData();
+        playMiddle();
 
         taskF.setOnSucceeded(it -> {
+            Platform.runLater(this::pauseMiddle);
             prBar.setProgress(0);
             loggerTA.appendText("Timer is set\n");
             timer = new Timer();
@@ -241,13 +331,25 @@ public class PrimaryController implements Initializable {
                         synchronized (comp) {
                             comp.addAllCars(carL);
                         }
-                        Platform.runLater(() -> loggerTA.appendText("Pushing trip...\n"));
+
+                        Platform.runLater(() -> {
+                            loggerTA.appendText("Pushing trip...\n");
+                            playMiddle();
+                            playTRT();
+                        });
+
                         try {
                             adapter.pushTrips(carL);
                             Platform.runLater(() -> loggerTA.appendText("Trip was successfully added\n"));
                         } catch (IllegalAccessException e) {
                             Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to push new trip:\n" + e.getMessage() + "\n"));
                         }
+
+                        Platform.runLater(() -> {
+                            pauseMiddle();
+                            stopTRT();
+                        });
+
                         return null;
                     }
                 };
@@ -266,13 +368,25 @@ public class PrimaryController implements Initializable {
                         synchronized (comp) {
                             comp.addAllTasks(reqL);
                         }
-                        Platform.runLater(() -> loggerTA.appendText("Pushing request...\n"));
+
+                        Platform.runLater(() -> {
+                            loggerTA.appendText("Pushing request...\n");
+                            playMiddle();
+                            playTRT();
+                        });
+
                         try {
                             adapter.pushRequests(reqL);
                             Platform.runLater(() -> loggerTA.appendText("Request was successfully added\n"));
                         } catch (IllegalAccessException e) {
                             Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to push new request:\n" + e.getMessage() + "\n"));
                         }
+
+                        Platform.runLater(() -> {
+                            pauseMiddle();
+                            stopTRT();
+                        });
+
                         return null;
                     }
                 };
@@ -306,7 +420,11 @@ public class PrimaryController implements Initializable {
                     synchronized (comp) {
                         comp.addAllTasks(reqL);
                     }
-                    Platform.runLater(() -> loggerTA.appendText("Pushing new requests...\n"));
+                    Platform.runLater(() -> {
+                        loggerTA.appendText("Pushing new requests...\n");
+                        playMiddle();
+                        playTRT();
+                    });
                     try {
                         adapter.pushRequests(reqL);
                         Platform.runLater(() -> loggerTA.appendText("Requests were successfully added\n"));
@@ -314,6 +432,12 @@ public class PrimaryController implements Initializable {
                         Platform.runLater(() ->
                                 loggerTA.appendText("[ERROR] : Impossible to push new requests:\n" + e.getMessage() + "\n"));
                     }
+
+                    Platform.runLater(() -> {
+                        pauseMiddle();
+                        stopTRT();
+                    });
+
                     return null;
                 }
             };
@@ -341,6 +465,7 @@ public class PrimaryController implements Initializable {
         return new Task<>() {
             @Override
             protected Void call() {
+                Platform.runLater(()->playTRT());
                 synchronized (comp) {
                     comp.clearTrips();
                     comp.clearRequests();
@@ -369,6 +494,8 @@ public class PrimaryController implements Initializable {
                 }
 
                 Platform.runLater(() -> {
+                    stopTRT();
+                    playMainT();
                     notifier.eventNotifier(0.05);
                     loggerTA.appendText("Downloading data...\n");
                 });
@@ -381,8 +508,10 @@ public class PrimaryController implements Initializable {
                 }
 
                 Platform.runLater(() -> {
+                    stopMainT();
                     notifier.eventNotifier(0.1);
                     loggerTA.appendText("We successfully got data\n");
+                    pauseMiddle();
                 });
 
                 computeAndPush(false);
@@ -394,7 +523,12 @@ public class PrimaryController implements Initializable {
     private void getUpdates() {
         comp.clearRequests();
 
-        Platform.runLater(() -> loggerTA.appendText("Getting not handled requests...\n"));
+        Platform.runLater(() -> {
+            loggerTA.appendText("Getting not handled requests...\n");
+            playMiddle();
+            playTRT();
+        });
+
         try {
             synchronized (comp) {
                 comp.addAllTasks(adapter.readNotHandledRequests());
@@ -402,7 +536,13 @@ public class PrimaryController implements Initializable {
         } catch (IllegalAccessException e) {
             Platform.runLater(() -> loggerTA.appendText("[ERROR] : Impossible to get requests:\n" + e.getMessage() + "\n"));
             return;
+        }finally {
+            Platform.runLater(() -> {
+                stopTRT();
+                pauseMiddle();
+            });
         }
+
         Platform.runLater(() -> {
             loggerTA.appendText("We successfully got requests\n");
             notifier.eventNotifier(0.2);
@@ -411,9 +551,17 @@ public class PrimaryController implements Initializable {
 
     private void computeAndPush(boolean update) {
         synchronized (comp) {
-            Platform.runLater(() -> loggerTA.appendText("Computing...\n"));
+            Platform.runLater(() -> {
+                loggerTA.appendText("Computing...\n");
+                playALg();
+            });
             comp.compute();
-            Platform.runLater(() -> loggerTA.appendText("Computing have been successfully finished\n"));
+            Platform.runLater(() -> {
+                loggerTA.appendText("Computing have been successfully finished\n");
+                stopAlg();
+                playMiddle();
+                playTRT();
+            });
 
             if (update) {
                 Platform.runLater(() -> loggerTA.appendText("Updating requests...\n"));
@@ -437,6 +585,8 @@ public class PrimaryController implements Initializable {
                 Platform.runLater(() -> {
                     notifier.eventNotifier(0.1);
                     loggerTA.appendText("Updating has been successfully finished\n");
+                    pauseMiddle();
+                    stopTRT();
                 });
             } else {
                 Platform.runLater(() -> loggerTA.appendText("Uploading requests...\n"));
@@ -460,6 +610,8 @@ public class PrimaryController implements Initializable {
                 Platform.runLater(() -> {
                     notifier.eventNotifier(0.1);
                     loggerTA.appendText("Uploading has been successfully finished\n");
+                    pauseMiddle();
+                    stopTRT();
                 });
             }
         }
@@ -571,5 +723,53 @@ public class PrimaryController implements Initializable {
     public void btnCurtailPressed(ActionEvent event) {
         Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
         stage.setIconified(true);
+    }
+
+    private void playMiddle(){
+        middleC.setFill(Paint.valueOf("#FFE599"));
+        sUC.setFill(Paint.valueOf("#FFE599"));
+        trMC.play();
+        trSC.play();
+    }
+
+    private void pauseMiddle(){
+        middleC.setFill(Paint.valueOf("#B5B0A1"));
+        sUC.setFill(Paint.valueOf("#B5B0A1"));
+        trMC.stop();
+        trSC.stop();
+    }
+
+    private void playTRT(){
+        leftBC.setFill(Paint.valueOf("#FFE599"));
+        leftMC.setFill(Paint.valueOf("#FFE599"));
+        trLBC.play();
+        trLMC.play();
+    }
+
+    private void stopTRT(){
+        leftBC.setFill(Paint.valueOf("#B5B0A1"));
+        leftMC.setFill(Paint.valueOf("#B5B0A1"));
+        trLBC.stop();
+        trLMC.stop();
+    }
+
+    private void playMainT(){
+        leftUC.setFill(Paint.valueOf("#FFE599"));
+        trLUC.play();
+    }
+
+    private void stopMainT(){
+        leftUC.setFill(Paint.valueOf("#B5B0A1"));
+        trLUC.stop();
+    }
+
+    private void playALg(){
+        rightUC.setFill(Paint.valueOf("#FFE599"));
+        trRUC.play();
+    }
+
+    private void stopAlg(){
+        rightUC.setFill(Paint.valueOf("#B5B0A1"));
+        trRUC.stop();
     }
 }

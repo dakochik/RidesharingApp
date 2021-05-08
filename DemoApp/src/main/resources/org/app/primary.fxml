@@ -2,48 +2,103 @@
 
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
 
 <AnchorPane id="paneLikeBane" fx:id="paneLikeBane" prefHeight="662.0" prefWidth="1023.0" style="-fx-background-color: #FFF8E3; -fx-background-radius: 30;" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.app.controller.PrimaryController">
-   <children>
-      <JFXProgressBar fx:id="prBar" layoutX="301.0" layoutY="361.0" prefHeight="18.0" prefWidth="700.0" progress="0.0" stylesheets="@styles/progressBarStyleSheet.css" />
+    <children>
+        <JFXProgressBar fx:id="prBar" layoutX="301.0" layoutY="361.0" prefHeight="18.0" prefWidth="700.0" progress="0.0" stylesheets="@styles/progressBarStyleSheet.css" />
 
-      <Button fx:id="closeBtn" layoutX="975.0" layoutY="14.0" mnemonicParsing="false" onAction="#btnClosePressed" prefHeight="25" prefWidth="25" stylesheets="@styles/closeButtonStyleSheet.css" />
-      <Button fx:id="curtailBtn" layoutX="940.0" layoutY="14.0" mnemonicParsing="false" onAction="#btnCurtailPressed" prefHeight="25" prefWidth="25" stylesheets="@styles/hideButtonStyleSheet.css" />
-      <Button id="browserBtn" layoutX="856.0" layoutY="14.0" prefHeight="25" prefWidth="75" stylesheets="@styles/openInBrowserButtonStyleSheet.css" />
+        <Button fx:id="closeBtn" layoutX="975.0" layoutY="14.0" mnemonicParsing="false" onAction="#btnClosePressed" prefHeight="25" prefWidth="25" stylesheets="@styles/closeButtonStyleSheet.css" />
+        <Button fx:id="curtailBtn" layoutX="930.0" layoutY="14.0" mnemonicParsing="false" onAction="#btnCurtailPressed" prefWidth="25" stylesheets="@styles/hideButtonStyleSheet.css" />
+        <Button id="browserBtn" layoutX="885.0" layoutY="14.0" prefHeight="25" prefWidth="25" stylesheets="@styles/openInBrowserButtonStyleSheet.css" />
 
-      <Button fx:id="btnStart" layoutX="16.0" layoutY="50.0" mnemonicParsing="false" onAction="#btnStartPressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Начать" />
-      <Button fx:id="btnUpdate" layoutX="16.0" layoutY="120.0" mnemonicParsing="false" onAction="#btnUpdatePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Обновить" />
-      <Button fx:id="btnPause" layoutX="16.0" layoutY="190.0" mnemonicParsing="false" onAction="#btnPausePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Пауза" />
-      <Button fx:id="btnCont" layoutX="16.0" layoutY="260.0" mnemonicParsing="false" onAction="#btnContinuePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Продолжить" />
-      <Button fx:id="btnAddFew" layoutX="16.0" layoutY="330.0" mnemonicParsing="false" onAction="#btnAddFewPressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Добавить" />
+        <Button fx:id="btnStart" layoutX="16.0" layoutY="50.0" mnemonicParsing="false" onAction="#btnStartPressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Начать" />
+        <Button fx:id="btnUpdate" layoutX="16.0" layoutY="120.0" mnemonicParsing="false" onAction="#btnUpdatePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Обновить" />
+        <Button fx:id="btnPause" layoutX="16.0" layoutY="190.0" mnemonicParsing="false" onAction="#btnPausePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Пауза" />
+        <Button fx:id="btnCont" layoutX="16.0" layoutY="260.0" mnemonicParsing="false" onAction="#btnContinuePressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Продолжить" />
+        <Button fx:id="btnAddFew" layoutX="16.0" layoutY="330.0" mnemonicParsing="false" onAction="#btnAddFewPressed" prefHeight="50.0" prefWidth="270.0" stylesheets="@styles/mainButtonsStyleSheet.css" text="Добавить" />
 
-      <TextArea fx:id="loggerTA" editable="false" layoutX="301.0" layoutY="50.0" prefHeight="306.0" prefWidth="700.0" />
+        <JFXTabPane layoutX="301.0" layoutY="50.0" prefHeight="306.0" prefWidth="700.0" stylesheets="@styles/tabPaneStyleSheet.css">
+            <Tab text="Схема">
+                <content>
+                    <AnchorPane prefHeight="306.0" prefWidth="700.0" style="-fx-background-color: #E3DAC1">
+                  <children>
+                      <Label layoutX="22" layoutY="10" stylesheets="@styles/textStyleSheet.css" text="Пользователи" />
+                      <Label layoutX="37" layoutY="100" stylesheets="@styles/textStyleSheet.css" text="Поездки" />
+                      <Label layoutX="37" layoutY="190" stylesheets="@styles/textStyleSheet.css" text="Запросы" />
+                      <Label layoutX="185" layoutY="90" stylesheets="@styles/textStyleSheet.css" text="Облачный сервис" />
+                      <Label layoutX="460" layoutY="80" maxWidth="100" stylesheets="@styles/textStyleSheet.css" text="Демонстраицонное приложение" textAlignment="CENTER" wrapText="true" />
+                      <Label layoutX="605" layoutY="30" stylesheets="@styles/textStyleSheet.css" text="Алгоритм" />
+                      <Label layoutX="590" layoutY="170" stylesheets="@styles/textStyleSheet.css" text="HTML страница" />
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="30.0" layoutY="25.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/table.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="30.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/table.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="30.0" layoutY="205.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/table.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="140.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/postgresql.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="263.0" layoutY="131.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/CARTO.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="480.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/pc.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="600.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/playoff.png" />
+                      </ImageView>
+                      <ImageView fitHeight="60.0" fitWidth="60.0" layoutX="600.0" layoutY="190.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: grey">
+                          <Image backgroundLoading="true" url="@image/map.png" />
+                      </ImageView>
+                     <Ellipse fx:id="middleC" fill="#B5B0A1" layoutX="401.0" layoutY="143.0" radiusX="9.0" radiusY="7.0"  />
+                      <Ellipse fx:id="rightBC" fill="#B5B0A1" layoutX="572.0" layoutY="184.0" radiusX="9.0" radiusY="7.0"  />
+                      <Ellipse fx:id="rightUC" fill="#B5B0A1" layoutX="572.0" layoutY="107.0" radiusX="9.0" radiusY="7.0" />
+                      <Ellipse fx:id="leftBC" fill="#B5B0A1" layoutX="122.0" layoutY="212.0" radiusX="9.0" radiusY="7.0" />
+                      <Ellipse fx:id="leftMC" fill="#B5B0A1" layoutX="122.0" layoutY="136.0" radiusX="9.0" radiusY="7.0"/>
+                      <Ellipse fx:id="leftUC" fill="#B5B0A1" layoutX="122.0" layoutY="70.0" radiusX="9.0" radiusY="7.0" />
+                      <Ellipse fx:id="sUC" fill="#B5B0A1" layoutX="230.0" layoutY="143.0" radiusX="9.0" radiusY="7.0"  />
+                  </children>
+                    </AnchorPane>
+                </content>
+            </Tab>
+            <Tab text="Журнал">
+                <content>
+                    <TextArea fx:id="loggerTA" editable="false" layoutX="10.0" layoutY="10.0" prefHeight="306.0" prefWidth="700.0" />
+                </content>
+            </Tab>
+        </JFXTabPane>
+        <Pane layoutX="16.0" layoutY="394.0" prefHeight="253.0" prefWidth="991.0" style="-fx-background-color: #EFE0B3; -fx-background-radius: 10;">
+            <children>
+                <Label layoutX="674.0" layoutY="23.0" prefHeight="14.0" prefWidth="305.0" stylesheets="@styles/textStyleSheet.css" text="Автоматически сгенерированный идентификатор поездки" />
+                <Label layoutX="14.0" layoutY="172.0" stylesheets="@styles/textStyleSheet.css" text="Дата и время запроса" />
+                <Label layoutX="13.0" layoutY="15.0" stylesheets="@styles/textStyleSheet.css" text="Отправление" />
+                <Label layoutX="227.0" layoutY="15.0" stylesheets="@styles/textStyleSheet.css" text="Прибытие" />
 
-      <Pane layoutX="16.0" layoutY="394.0" prefHeight="253.0" prefWidth="991.0" style="-fx-background-color: #EFE0B3; -fx-background-radius: 10;">
-         <children>
-            <Label layoutX="674.0" layoutY="23.0" prefHeight="14.0" prefWidth="305.0" stylesheets="@styles/textStyleSheet.css" text="Автоматически сгенерированный идентификатор поездки" />
-            <Label layoutX="14.0" layoutY="172.0" stylesheets="@styles/textStyleSheet.css" text="Дата и время запроса" />
-            <Label layoutX="13.0" layoutY="15.0" stylesheets="@styles/textStyleSheet.css" text="Отправление" />
-            <Label layoutX="227.0" layoutY="15.0" stylesheets="@styles/textStyleSheet.css" text="Прибытие" />
+                <JFXTextField fx:id="orLatTF" labelFloat="true" layoutX="14.0" layoutY="56.0" prefHeight="25.0" prefWidth="174.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
+                <JFXTextField fx:id="orLonTF" labelFloat="true" layoutX="14.0" layoutY="119.0" prefHeight="25.0" prefWidth="174.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
+                <JFXTextField fx:id="idTF" editable="false" layoutX="671.0" layoutY="56.0" prefHeight="25.0" prefWidth="305.0" stylesheets="@styles/tfStyleSheet.css" />
+                <JFXTextField fx:id="destLatTF" labelFloat="true" layoutX="227.0" layoutY="56.0" prefHeight="25.0" prefWidth="174.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
+                <JFXTextField fx:id="destLonTF" labelFloat="true" layoutX="227.0" layoutY="119.0" prefHeight="25.0" prefWidth="174.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
+                <JFXTextField fx:id="wTime" labelFloat="true" layoutX="440.0" layoutY="56.0" prefWidth="181.0" promptText="Макс. время ожидания (минуты)" stylesheets="@styles/tfStyleSheet.css" />
+                <JFXTextField fx:id="tCoefficient" labelFloat="true" layoutX="440.0" layoutY="120.0" prefWidth="181.0" promptText="Макс. коэф-т увел-я поездки" stylesheets="@styles/tfStyleSheet.css" />
 
-            <JFXTextField fx:id="orLatTF" labelFloat="true" layoutX="14.0" layoutY="56.0" prefHeight="25.0" prefWidth="174.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="orLonTF" labelFloat="true" layoutX="14.0" layoutY="119.0" prefHeight="25.0" prefWidth="174.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="idTF" editable="false" layoutX="671.0" layoutY="56.0" prefHeight="25.0" prefWidth="305.0" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="destLatTF" labelFloat="true" layoutX="227.0" layoutY="56.0" prefHeight="25.0" prefWidth="174.0" promptText="Широта" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="destLonTF" labelFloat="true" layoutX="227.0" layoutY="119.0" prefHeight="25.0" prefWidth="174.0" promptText="Долгота" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="wTime" labelFloat="true" layoutX="440.0" layoutY="56.0" prefWidth="181.0" promptText="Макс. время ожидания (минуты)" stylesheets="@styles/tfStyleSheet.css" />
-            <JFXTextField fx:id="tCoefficient" labelFloat="true" layoutX="440.0" layoutY="120.0" prefWidth="181.0" promptText="Макс. коэф-т увел-я поездки" stylesheets="@styles/tfStyleSheet.css" />
+                <Button fx:id="btnAdd" layoutX="895.0" layoutY="117.0" mnemonicParsing="false" onAction="#btnAddPressed" stylesheets="@styles/addButtonStyleSheet.css" text="Добавить" />
 
-            <Button fx:id="btnAdd" layoutX="895.0" layoutY="117.0" mnemonicParsing="false" onAction="#btnAddPressed" stylesheets="@styles/addButtonStyleSheet.css" text="Добавить" />
-
-            <JFXDatePicker fx:id="dP" layoutX="14.0" layoutY="199.0" prefHeight="28.0" prefWidth="181.0" />
-            <JFXTimePicker fx:id="tP" layoutX="227.0" layoutY="199.0" prefHeight="28.0" prefWidth="181.0" />
-            <JFXRadioButton fx:id="rBtn" layoutX="467.0" layoutY="204.0" mnemonicParsing="false" text="Добавить машину">
-               <selectedColor>
-                  <Color green="0.5882353186607361" blue="0.5333333611488342" />
-               </selectedColor></JFXRadioButton>
-         </children></Pane>
-   </children>
+                <JFXDatePicker fx:id="dP" layoutX="14.0" layoutY="199.0" prefHeight="28.0" prefWidth="181.0" />
+                <JFXTimePicker fx:id="tP" layoutX="227.0" layoutY="199.0" prefHeight="28.0" prefWidth="181.0" />
+                <JFXRadioButton fx:id="rBtn" layoutX="467.0" layoutY="204.0" mnemonicParsing="false" text="Добавить машину">
+                    <selectedColor>
+                        <Color green="0.5882353186607361" blue="0.5333333611488342" />
+                    </selectedColor>
+                </JFXRadioButton>
+            </children>
+        </Pane>
+    </children>
 </AnchorPane>
