@@ -1,3 +1,4 @@
+
 const map = L.map('map').setView([42.2, -87.1], 7);
 
 // Adding Voyager Basemap
@@ -10,6 +11,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{
     maxZoom: 18,
     zIndex: 10
 }).addTo(map);
+
+document.addEventListener('DOMContentLoaded', function () {
+    var elems = document.querySelectorAll('.collapsible');
+    var instances = M.Collapsible.init(elems, options);
+});
+
+M.AutoInit();
 
 var client = new carto.Client({
     apiKey: '1dfba9e5fb93bade9610d6c49e070d65f5760ddb',
@@ -30,8 +38,8 @@ function drawMap(number, options) {
 
     if (flag1) {
         const dataset1 = new carto.source.SQL(`
-                    SELECT *
-                    FROM chicago_5000_filtered`
+            SELECT *
+            FROM chicago_5000_filtered`
             + options +
             ` LIMIT ` + number.toString());
         const style1 = new carto.style.CartoCSS(`
@@ -50,8 +58,8 @@ function drawMap(number, options) {
 
     if (flag2) {
         const dataset2 = new carto.source.SQL(`
-                    SELECT *
-                    FROM chicago_5000_cars`
+            SELECT *
+            FROM chicago_5000_cars`
             + options +
             ` LIMIT ` + number.toString());
         const style2 = new carto.style.CartoCSS(`
@@ -70,8 +78,8 @@ function drawMap(number, options) {
 
     if (flag3) {
         const dataset3 = new carto.source.SQL(`
-                    SELECT *
-                    FROM chicago_5000_requests`
+            SELECT *
+            FROM chicago_5000_requests`
             + options +
             ` LIMIT ` + number.toString());
         const style3 = new carto.style.CartoCSS(`
@@ -90,9 +98,9 @@ function drawMap(number, options) {
 
     if (tripID != null && tripID != "") {
         const dataset4 = new carto.source.SQL(`
-                    SELECT *
-                    FROM chicago_5000_cars
-                    WHERE trip_id = '` + tripID + `'` +
+            SELECT *
+            FROM chicago_5000_cars
+            WHERE trip_id = '` + tripID + `'` +
             `UNION SELECT *
                 FROM chicago_5000_cars
                 WHERE trip_id in
@@ -102,7 +110,7 @@ function drawMap(number, options) {
         const style4 = new carto.style.CartoCSS(`
             #layer {
             line-width: 3;
-            line-color: #FF00B7;
+            line-color: #ff6f00;
             line-opacity: 1;
             }
             `);
@@ -123,10 +131,11 @@ function prepareFiltering() {
     let dataLowerBound = document.getElementById("trips_time_begin").value
     let dataUpperBound = document.getElementById("trips_time_end").value
     if (dataLowerBound != "" && dataUpperBound != "") {
+        dataLowerBound = convert(document.getElementById("trips_time_begin").value)
+        dataUpperBound = convert(document.getElementById("trips_time_end").value)
         if (toDate(dataLowerBound, "h:m") > toDate(dataUpperBound, "h:m")) {
             alert("Time window lower bound can't be bigger than upper bound!")
         } else {
-            alert("between '" + dataLowerBound + "' and '" + dataUpperBound + "'")
             drawMap(maxNumb, " WHERE cast(trip_start_timestamp as time) between '" + dataLowerBound + "' and '" + dataUpperBound + "'")
         }
     } else {
@@ -134,11 +143,27 @@ function prepareFiltering() {
     }
 }
 
+function convert(str) {
+    const [time, modifier] = str.split(' ');
+
+    let [hours, minutes] = time.split(':');
+
+    if (hours === '12') {
+        hours = '00';
+    }
+
+    if (modifier === 'PM') {
+        hours = parseInt(hours, 10) + 12;
+    }
+
+    return `${hours}:${minutes}`;
+}
+
 function toDate(dStr, format) {
     var now = new Date();
-    if (format == "h:m") {
+    if (format == "h:m ") {
         now.setHours(dStr.substr(0, dStr.indexOf(":")));
-        now.setMinutes(dStr.substr(dStr.indexOf(":") + 1));
+        now.setMinutes(dStr.substr(dStr.indexOf(":") + 1, dStr.indexOf(" ")));
         now.setSeconds(0);
         return now;
     } else

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Guide | CARTO</title>
+    <title>Demo map</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
     <!-- Include Leaflet -->
@@ -11,6 +11,14 @@
     <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.2.0/carto.min.js"></script>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js">
     <style>
         * {
             margin: 0;
@@ -31,79 +39,133 @@
         #container {
             display: flex;
             width: 100%;
-            height: 100%;
+            height: 90%;
         }
 
         #map {
-            flex: 1;
-            margin: 10px;
+            position: absolute;
+            height: 91%;
+            width: 100%;
+            z-index: 0;
         }
 
         #widgets {
+            position: absolute;
+            top: 60px;
+            right: 10px;
             width: 300px;
             margin: 10px 10px 10px 0;
+            z-index: 2;
         }
 
-        .widget {
-            background: white;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-
-        .widget h1 {
-            font-size: 1.2em;
-        }
-
-        .widget h2 {
-            font-size: 1em;
-            display: inline;
+        #button {
+            float: right;
+            width: 100%;
         }
 
         .widget-formula .result {
             font-size: 2em;
         }
 
+        /* label focus color */
+        .input-field input[type=text]:focus + label, .materialize-textarea:focus:not([readonly]) + label {
+            color: #aed581 !important;
+        }
+
+        /* label underline focus color */
+        .input-field input[type=text]:focus, .materialize-textarea:focus:not([readonly]) {
+            border-bottom: 1px solid #aed581 !important;
+            box-shadow: 0 1px 0 0 #aed581 !important;
+        }
+
+        .checkbox-green[type="checkbox"].filled-in:checked + span:not(.lever):after {
+            border: 2px solid #aed581;
+            background-color: #aed581;
+        }
     </style>
 </head>
-<body>
+<body class="amber lighten-5">
+<nav class="nav-wrapper #e0e0e0 grey lighten">
+    <div class="container">
+        <a href="#" class="brand-logo">Kinetic tree demo</a>
+    </div>
+</nav>
 <div id="container">
     <div id="map"></div>
     <div id="widgets">
-        <div id="tripsNumb" class="widget">
-            <h1>Maximum number of trips</h1>
-            <input type="number" width="3" id="trips_numb" name="trips_numb" min="1" value="100"
-                   onchange="prepareFiltering()">
-        </div>
-        <div id="tripsDate" class="widget">
-            <h1>Trip request time</h1>
-            <h2>
-                <h2>From:</h2>
-                <input type="time" width="3" id="trips_time_begin" name="trips_time_begin">
-                <h2>To:</h2>
-                <input type="time" width="3" id="trips_time_end" name="trips_time_end">
-                <button id="filter_by_time_button" onclick="prepareFiltering()">Show</button>
-            </h2>
-        </div>
-        <div id="chooseDataSets" class="widget">
-            <h1>Displayed data sets</h1>
-            <div style="margin-left: 5px">
-                <input type="checkbox" onchange="prepareFiltering()" id="c_b_1" checked>
-                <h2> - All requests</h2>
-            </div>
-            <div style="margin-left: 5px">
-                <input type="checkbox" onchange="prepareFiltering()" id="c_b_2">
-                <h2> - Car trips</h2>
-            </div>
-            <div style="margin-left: 5px">
-                <input type="checkbox" onchange="prepareFiltering()" id="c_b_3">
-                <h2> - User trips</h2>
-            </div>
-        </div>
-        <div id="exactTrip" class="widget">
-            <h1>Show exact trip by id</h1>
-            <input type="text" id="trip_id"/>
-            <button id="show_exact_trip" onclick="prepareFiltering()">Show</button>
-        </div>
+        <ul class="collapsible">
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">directions_car</i>
+                    Trips number limitation
+                </div>
+                <div class="collapsible-body white">
+                    <div class="input-field">
+                        <input type="text" id="trips_numb" min="1" value="100" onchange="prepareFiltering()"/>
+                        <label for="trip_id">Trip or request id</label>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">access_alarm</i>
+                    Requests time limitation
+                </div>
+                <div class="collapsible-body white">
+                    <div class="input-field">
+                        <label for="trips_time_begin">Minimum time value</label>
+                        <input type="text" class="timepicker" id="trips_time_begin" name="trips_time_begin">
+                    </div>
+                    <div class="input-field">
+                        <label for="trips_time_begin">Maximum time value</label>
+                        <input type="text" class="timepicker" id="trips_time_end" name="trips_time_end">
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">collections</i>
+                    Displayed data sets
+                </div>
+                <div class="collapsible-body white">
+                    <form action="#">
+                        <p>
+                            <label>
+                                <input type="checkbox" class="filled-in checkbox-green" id="c_b_1" checked/>
+                                <span>All requests</span>
+                            </label>
+                        </p>
+                        <p>
+                            <label>
+                                <input type="checkbox" class="filled-in checkbox-green" id="c_b_2"/>
+                                <span>Car trips</span>
+                            </label>
+                        </p>
+                        <p>
+                            <label>
+                                <input type="checkbox" class="filled-in checkbox-green" id="c_b_3"/>
+                                <span>User requests</span>
+                            </label>
+                        </p>
+                    </form>
+                </div>
+            </li>
+            <li>
+                <div class="collapsible-header">
+                    <i class="material-icons">search</i>
+                    Find by id
+                </div>
+                <div class="collapsible-body white">
+                    <div class="input-field">
+                        <input type="text" id="trip_id" />
+                        <label for="trip_id">Trip or request id</label>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <a href="#" id="button" class="btn light-green lighten-2 waves-effect waves-light" onclick="prepareFiltering()">
+            <span>Draw</span>
+        </a>
     </div>
 </div>
 <script src="PageScript.js"></script>
