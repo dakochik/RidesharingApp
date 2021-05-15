@@ -6,6 +6,7 @@ import server.model.users.TripRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 public class RideSharingComputer {
     private final IterNotifier notifier;
@@ -64,8 +65,9 @@ public class RideSharingComputer {
      */
     public final void compute() {
         for (int i = 0; i < requests.size(); ++i) {
+            ForkJoinPool pool = ForkJoinPool.commonPool();
             RideSharingComputerRecursiveTask task = new RideSharingComputerRecursiveTask(cars, requests.get(i));
-            var res = task.compute();
+            var res = pool.invoke(task);
             res.ifPresent(this::handleUpdating);
             notifier.eventNotifier();
         }
