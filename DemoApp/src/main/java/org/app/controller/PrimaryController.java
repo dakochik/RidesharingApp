@@ -455,7 +455,7 @@ public class PrimaryController implements Initializable {
                 comp.addTask(requests.get(i));
             }
 
-            for (int i = 2 * requests.size() / 3 + 1; i < requests.size(); ++i) {
+            for (int i = 2 * requests.size() / 3; i < requests.size(); ++i) {
                 comp.addCar(new Car(3, requests.get(i)));
             }
         }
