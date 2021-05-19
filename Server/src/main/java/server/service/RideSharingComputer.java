@@ -65,10 +65,12 @@ public class RideSharingComputer {
      */
     public final void compute() {
         for (int i = 0; i < requests.size(); ++i) {
-            ForkJoinPool pool = ForkJoinPool.commonPool();
-            RideSharingComputerRecursiveTask task = new RideSharingComputerRecursiveTask(cars, requests.get(i));
-            var res = pool.invoke(task);
-            res.ifPresent(this::handleUpdating);
+            if(requests.get(i).carId.isEmpty()) {
+                ForkJoinPool pool = ForkJoinPool.commonPool();
+                RideSharingComputerRecursiveTask task = new RideSharingComputerRecursiveTask(cars, requests.get(i));
+                var res = pool.invoke(task);
+                res.ifPresent(this::handleUpdating);
+            }
             notifier.eventNotifier();
         }
     }
